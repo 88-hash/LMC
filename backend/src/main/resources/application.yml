@@ -1,0 +1,25 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: leyi-snack-backend
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 这里的 3306 后面是你的数据库名，确保和 Navicat 里一致
+    url: jdbc:mysql://localhost:3306/leyi_snack_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root
+    # ==================================
+    # ⚠️ 记得确认你的密码是不是 123456
+    # ==================================
+    password: 123456
+
+# 原生 MyBatis 配置
+mybatis:
+  # 告诉它 XML 文件放在哪里 (稍后我们会创建)
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    # 开启驼峰命名转换 (比如 user_name -> userName)
+    map-underscore-to-camel-case: true
+    # 打印 SQL 日志 (方便调试)
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
