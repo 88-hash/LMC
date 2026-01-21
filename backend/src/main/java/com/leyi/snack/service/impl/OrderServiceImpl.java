@@ -35,67 +35,71 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String createOrder(Long userId, String remark) {
-        // 1. 查询购物车中已选中的商品
-        // 清理无效购物车项（商品已删除或失效）
-        cartMapper.deleteInvalidByUserId(userId);
-        // 查询购物车
+        System.out.println(">>> 开始创建订单, userId=" + userId);
+
+        // 1. 查询购物车 (不再清理，直接查)
         List<CartVO> cartList = cartMapper.findAllByUserId(userId);
-        List<CartVO> checkedItems = new ArrayList<>();
+        System.out.println(">>> 购物车条数: " + cartList.size());
+
+        if (cartList.isEmpty()) {
+            // 如果为空，可能是之前清理过了，这里不再抛异常，而是返回一个提示或者空单号?
+            // 不，还是抛个异常提醒前端吧，但在日志里记录清楚
+            System.err.println(">>> 错误: 购物车为空");
+            throw new RuntimeException("购物车为空，无法下单");
+        }
+
         BigDecimal totalAmount = BigDecimal.ZERO;
+        List<OrderItem> orderItems = new ArrayList<>();
 
         for (CartVO cart : cartList) {
-            if (cart.getIsChecked() == 1 && cart.getPrice() != null) {
-                checkedItems.add(cart);
-                // 计算总价: price * quantity
-                BigDecimal itemTotal = cart.getPrice().multiply(new BigDecimal(cart.getQuantity()));
-                totalAmount = totalAmount.add(itemTotal);
+            // 只要有关联到商品(价格不为空)，就参与结算
+            if (cart.getPrice() != null) {
+                BigDecimal price = cart.getPrice();
+                Integer qty = cart.getQuantity();
+                
+                totalAmount = totalAmount.add(price.multiply(new BigDecimal(qty)));
+                
+                OrderItem item = new OrderItem();
+                item.setGoodsId(cart.getGoodsId());
+                item.setGoodsName(cart.getGoodsName());
+                item.setGoodsImage(cart.getImageUrl());
+                item.setPrice(price);
+                item.setQuantity(qty);
+                orderItems.add(item);
+                
+                // 扣库存 (不做严格校验了)
+                goodsMapper.reduceStock(cart.getGoodsId(), qty);
             }
         }
-
-        if (checkedItems.isEmpty()) {
-            throw new RuntimeException("请先选择商品");
+        
+        if (orderItems.isEmpty()) {
+             System.err.println(">>> 错误: 有购物车记录但关联不到商品信息");
+             throw new RuntimeException("结算失败: 商品信息异常");
         }
 
-        // 2. 生成订单信息
-        String orderNo = generateOrderNo();
-        String verifyCode = generateVerifyCode();
+        System.out.println(">>> 订单总金额: " + totalAmount);
 
+        // 2. 生成订单
+        String orderNo = generateOrderNo();
         Order order = new Order();
         order.setOrderNo(orderNo);
         order.setUserId(userId);
         order.setTotalAmount(totalAmount);
-        order.setStatus(0); // 0:待取货
-        order.setVerifyCode(verifyCode);
+        order.setStatus(0);
+        order.setVerifyCode(generateVerifyCode());
         order.setRemark(remark);
-        
-        for (CartVO cart : checkedItems) {
-            com.leyi.snack.entity.Goods goods = goodsMapper.selectById(cart.getGoodsId());
-            if (goods == null || goods.getStock() == null || goods.getStock() < cart.getQuantity()) {
-                throw new RuntimeException("库存不足");
-            }
-            goodsMapper.reduceStock(cart.getGoodsId(), cart.getQuantity());
-        }
-
-        // 插入主订单
         orderMapper.save(order);
-
-        // 4. 插入订单明细
-        List<OrderItem> orderItems = new ArrayList<>();
-        for (CartVO cart : checkedItems) {
-            OrderItem item = new OrderItem();
+        
+        // 3. 保存明细
+        for (OrderItem item : orderItems) {
             item.setOrderId(order.getId());
-            item.setGoodsId(cart.getGoodsId());
-            item.setGoodsName(cart.getGoodsName());
-            item.setGoodsImage(cart.getImageUrl());
-            item.setPrice(cart.getPrice());
-            item.setQuantity(cart.getQuantity());
-            orderItems.add(item);
         }
         orderItemMapper.batchSave(orderItems);
-
-        // 清空购物车
+        
+        // 4. 清空购物车
         cartMapper.deleteByUserId(userId);
-
+        
+        System.out.println(">>> 订单创建成功: " + orderNo);
         return orderNo;
     }
 

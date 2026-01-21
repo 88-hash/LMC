@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 public class VerifyLog {
     private Long id;
     private Long orderId;
-    private Long adminId; // 核销员ID
-    private LocalDateTime verifyTime;
+    private Long adminId;
+    private java.time.LocalDateTime verifyTime;
+    private String action; // 核销/取消
+    private String remark;
 }

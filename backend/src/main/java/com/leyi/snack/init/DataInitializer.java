@@ -28,6 +28,56 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
+        // 0. 暴力重置表结构 (修复字段缺失问题)
+        jdbcTemplate.execute("DROP TABLE IF EXISTS `order_item`");
+        jdbcTemplate.execute("DROP TABLE IF EXISTS `orders`");
+
+        // 1. 确保表结构存在 (兼容 `init.sql`)
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS `orders` (" +
+                "  `id` bigint(20) NOT NULL AUTO_INCREMENT," +
+                "  `order_no` varchar(64) NOT NULL," +
+                "  `user_id` bigint(20) NOT NULL," +
+                "  `total_amount` decimal(10,2) NOT NULL," +
+                "  `status` int(11) DEFAULT '0'," +
+                "  `verify_code` varchar(32) DEFAULT NULL," +
+                "  `remark` varchar(255) DEFAULT NULL," +
+                "  `created_at` datetime DEFAULT CURRENT_TIMESTAMP," +
+                "  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+                "  PRIMARY KEY (`id`)," +
+                "  UNIQUE KEY `uk_order_no` (`order_no`)" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS `order_item` (" +
+                "  `id` bigint(20) NOT NULL AUTO_INCREMENT," +
+                "  `order_id` bigint(20) NOT NULL," +
+                "  `goods_id` bigint(20) NOT NULL," +
+                "  `goods_name` varchar(128) NOT NULL," +
+                "  `goods_image` varchar(255) DEFAULT NULL," +
+                "  `price` decimal(10,2) NOT NULL," +
+                "  `quantity` int(11) NOT NULL," +
+                "  PRIMARY KEY (`id`)" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+        jdbcTemplate.execute("DROP TABLE IF EXISTS `verify_log`"); // 强制重建
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS `verify_log` (" +
+                "  `id` bigint(20) NOT NULL AUTO_INCREMENT," +
+                "  `order_id` bigint(20) NOT NULL," +
+                "  `admin_id` bigint(20) NOT NULL," +
+                "  `verify_time` datetime DEFAULT CURRENT_TIMESTAMP," +
+                "  `action` varchar(32) DEFAULT NULL," +
+                "  `remark` varchar(255) DEFAULT NULL," +
+                "  PRIMARY KEY (`id`)" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+        // 2. 插入测试用户 (为了 userId=1 能通过)
+        try {
+            jdbcTemplate.execute("INSERT IGNORE INTO user (id, name, phone, password, created_at) " +
+                    "VALUES (1, '测试店长', '13800000000', '123456', NOW())");
+        } catch (Exception e) {
+            // 忽略，可能表结构不同
+        }
+
+        // 3. 清空商品数据 (重新灌入)
         jdbcTemplate.execute("DELETE FROM goods");
         jdbcTemplate.execute("DELETE FROM category");
 

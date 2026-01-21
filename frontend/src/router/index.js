@@ -32,7 +32,7 @@ const routes = [
       { path: 'category', name: 'AdminCategory', component: () => import('../views/admin/Category.vue'), meta: { title: '分类管理' } },
       { path: 'goods', name: 'AdminGoods', component: () => import('../views/admin/Goods.vue'), meta: { title: '商品管理' } },
       { path: 'orders', component: () => import('../views/admin/Dashboard.vue'), meta: { title: '订单管理' } },
-      { path: 'verify', component: () => import('../views/admin/Dashboard.vue'), meta: { title: '核销中心' } }
+      { path: 'verify', name: 'AdminVerify', component: () => import('../views/admin/Verify.vue'), meta: { title: '核销中心' } }
     ]
   }
 ]

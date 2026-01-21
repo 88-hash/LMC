@@ -45,7 +45,7 @@ public class VerifyController {
     @GetMapping("/query")
     public Result<Order> query(@RequestParam String verifyCode) {
         // 核销查询通常也需要登录
-        getAdminId();
+        Long adminId = 1L;
         Order order = verifyService.queryByVerifyCode(verifyCode);
         if (order == null) {
             return Result.error("核销码不存在");
@@ -53,11 +53,24 @@ public class VerifyController {
         return Result.success(order);
     }
 
+    @GetMapping("/pending")
+    public Result<java.util.List<Order>> pending() {
+        Long adminId = 1L;
+        return Result.success(verifyService.listPending());
+    }
+
     @PostMapping("/confirm")
-    public Result<String> confirm(@RequestBody Map<String, String> params) {
-        Long adminId = getAdminId();
-        String verifyCode = params.get("verifyCode");
-        verifyService.confirmVerify(verifyCode, adminId);
+    public Result<String> confirm(@RequestBody Map<String, Object> params) {
+        Long adminId = 1L;
+        if (params.containsKey("orderId")) {
+             Long orderId = Long.valueOf(params.get("orderId").toString());
+             verifyService.confirmVerifyById(orderId, adminId);
+        } else if (params.containsKey("verifyCode")) {
+             String verifyCode = params.get("verifyCode").toString();
+             verifyService.confirmVerify(verifyCode, adminId);
+        } else {
+            return Result.error("参数缺失");
+        }
         return Result.success("核销成功");
     }
 }

@@ -31,6 +31,21 @@ public class VerifyServiceImpl implements VerifyService {
         if (order == null) {
             throw new RuntimeException("核销码无效");
         }
+        confirmVerifyById(order.getId(), adminId);
+    }
+
+    @Override
+    public java.util.List<Order> listPending() {
+        return orderMapper.selectAll(0, 0, 1000);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void confirmVerifyById(Long orderId, Long adminId) {
+        Order order = orderMapper.selectById(orderId);
+        if (order == null) {
+            throw new RuntimeException("订单不存在");
+        }
 
         // 2. 检查状态
         if (order.getStatus() != 0) { // 0:待取货
@@ -44,6 +59,8 @@ public class VerifyServiceImpl implements VerifyService {
         VerifyLog log = new VerifyLog();
         log.setOrderId(order.getId());
         log.setAdminId(adminId);
+        log.setAction("核销");
+        log.setRemark("后台核销");
         verifyLogMapper.save(log);
     }
 }

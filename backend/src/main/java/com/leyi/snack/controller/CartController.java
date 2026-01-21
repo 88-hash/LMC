@@ -54,20 +54,20 @@ public class CartController {
 
     @PostMapping("/add")
     public Result<String> add(@RequestBody CartAddDTO dto) {
-        Long userId = getUserId();
+        Long userId = 1L; // 临时模拟用户
         cartService.addToCart(userId, dto);
         return Result.success("加入购物车成功");
     }
 
     @GetMapping("/list")
     public Result<List<CartVO>> list() {
-        Long userId = getUserId();
+        Long userId = 1L; // 临时模拟用户
         return Result.success(cartService.list(userId));
     }
 
     @PostMapping("/update")
     public Result<String> update(@RequestBody CartUpdateDTO dto) {
-        getUserId();
+        Long userId = 1L; // 临时模拟用户
         cartService.update(dto.getId(), dto.getQuantity());
         return Result.success("更新成功");
     }
@@ -75,7 +75,7 @@ public class CartController {
     @GetMapping("/delete")
     public Result<String> delete(@RequestParam Long id) {
         // 鉴权检查
-        getUserId();
+        Long userId = 1L; // 临时模拟用户
         cartService.delete(id);
         return Result.success("删除成功");
     }

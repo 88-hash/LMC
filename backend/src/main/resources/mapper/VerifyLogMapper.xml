@@ -5,8 +5,8 @@
 <mapper namespace="com.leyi.snack.mapper.VerifyLogMapper">
 
     <insert id="save" parameterType="com.leyi.snack.entity.VerifyLog">
-        INSERT INTO verify_log (order_id, admin_id, verify_time)
-        VALUES (#{orderId}, #{adminId}, NOW())
+        INSERT INTO verify_log (order_id, admin_id, verify_time, action, remark)
+        VALUES (#{orderId}, #{adminId}, NOW(), #{action}, #{remark})
     </insert>
 
 </mapper>

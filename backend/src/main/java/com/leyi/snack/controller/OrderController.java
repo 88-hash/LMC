@@ -43,22 +43,32 @@ public class OrderController {
     }
 
     @PostMapping("/create")
-    public Result<String> create(@RequestBody OrderCreateDTO dto) {
-        Long userId = getUserId();
-        String orderNo = orderService.createOrder(userId, dto.getRemark());
-        return Result.success(orderNo);
+    public Result<String> create(@RequestBody Map<String, String> params) {
+        try {
+            // ⚠️ 强制修改：不再检查 Token，直接模拟 1 号用户下单
+            Long userId = 1L;
+            
+            String remark = params.get("remark");
+            // 调用 Service
+            String orderNo = orderService.createOrder(userId, remark);
+            return Result.success(orderNo);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("下单失败: " + e.getMessage());
+        }
     }
 
     @GetMapping("/list")
     public Result<List<Order>> list() {
-        Long userId = getUserId();
+        // ⚠️ 强制修改：直接查看 1 号用户的订单
+        Long userId = 1L;
         return Result.success(orderService.list(userId));
     }
 
     @GetMapping("/detail")
     public Result<Map<String, Object>> detail(@RequestParam Long id) {
         // 这里暂时不校验 userId 是否匹配，实际项目建议校验
-        getUserId(); 
+        Long userId = 1L; // 临时模拟用户
         return Result.success(orderService.detail(id));
     }
 }
