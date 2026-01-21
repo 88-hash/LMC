@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.leyi.snack.mapper.OrdersMapper">
+
+    <insert id="save" parameterType="com.leyi.snack.entity.Orders" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO orders (order_no, user_id, total_amount, status, remark)
+        VALUES (#{orderNo}, #{userId}, #{totalAmount}, #{status}, #{remark})
+    </insert>
+
+    <select id="selectById" resultType="com.leyi.snack.entity.Orders">
+        SELECT * FROM orders WHERE id = #{id}
+    </select>
+
+    <select id="selectByUserId" resultType="com.leyi.snack.entity.Orders">
+        SELECT * FROM orders WHERE user_id = #{userId} ORDER BY created_at DESC
+    </select>
+
+</mapper>

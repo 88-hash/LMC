@@ -2,6 +2,7 @@ package com.leyi.snack.service.impl;
 
 import com.leyi.snack.entity.Cart;
 import com.leyi.snack.entity.CartVO;
+import com.leyi.snack.dto.CartAddDTO;
 import com.leyi.snack.mapper.CartMapper;
 import com.leyi.snack.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,23 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    public void addToCart(Long userId, CartAddDTO dto) {
+        Long goodsId = dto.getGoodsId();
+        Integer quantity = dto.getQuantity() == null ? 1 : dto.getQuantity();
+        Cart existCart = cartMapper.selectByUserIdAndGoodsId(userId, goodsId);
+        if (existCart != null) {
+            int newQuantity = existCart.getQuantity() + quantity;
+            cartMapper.updateQuantity(existCart.getId(), newQuantity);
+        } else {
+            Cart cart = new Cart();
+            cart.setUserId(userId);
+            cart.setGoodsId(goodsId);
+            cart.setQuantity(quantity);
+            cartMapper.save(cart);
+        }
+    }
+
+    @Override
     public List<CartVO> list(Long userId) {
         return cartMapper.findAllByUserId(userId);
     }
@@ -55,5 +73,10 @@ public class CartServiceImpl implements CartService {
     @Override
     public void deleteChecked(Long userId) {
         cartMapper.deleteChecked(userId);
+    }
+
+    @Override
+    public void deleteByUserId(Long userId) {
+        cartMapper.deleteByUserId(userId);
     }
 }

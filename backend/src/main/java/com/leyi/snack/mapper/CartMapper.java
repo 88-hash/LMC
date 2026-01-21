@@ -20,4 +20,6 @@ public interface CartMapper {
     int deleteById(@Param("id") Long id);
     
     int deleteChecked(@Param("userId") Long userId);
+    int deleteByUserId(@Param("userId") Long userId);
+    int deleteInvalidByUserId(@Param("userId") Long userId);
 }

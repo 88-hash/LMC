@@ -14,4 +14,6 @@ public interface GoodsMapper {
     
     // 统计库存紧张商品
     Integer countLowStock(@Param("threshold") int threshold);
+    Goods selectById(@Param("id") Long id);
+    int reduceStock(@Param("id") Long id, @Param("delta") Integer delta);
 }

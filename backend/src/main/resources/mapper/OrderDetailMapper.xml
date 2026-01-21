@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.leyi.snack.mapper.OrderDetailMapper">
+
+    <insert id="batchSave">
+        INSERT INTO order_detail (order_id, goods_id, goods_name, goods_image, price, quantity)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.orderId}, #{item.goodsId}, #{item.goodsName}, #{item.goodsImage}, #{item.price}, #{item.quantity})
+        </foreach>
+    </insert>
+
+    <select id="selectByOrderId" resultType="com.leyi.snack.entity.OrderDetail">
+        SELECT * FROM order_detail WHERE order_id = #{orderId}
+    </select>
+
+</mapper>

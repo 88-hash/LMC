@@ -5,6 +5,7 @@ import com.leyi.snack.entity.CartVO;
 import com.leyi.snack.entity.Order;
 import com.leyi.snack.entity.OrderItem;
 import com.leyi.snack.mapper.CartMapper;
+import com.leyi.snack.mapper.GoodsMapper;
 import com.leyi.snack.mapper.OrderItemMapper;
 import com.leyi.snack.mapper.OrderMapper;
 import com.leyi.snack.service.OrderService;
@@ -28,18 +29,22 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private CartMapper cartMapper;
 
+    @Autowired
+    private GoodsMapper goodsMapper;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String createOrder(Long userId, String remark) {
         // 1. 查询购物车中已选中的商品
-        // 注意：CartMapper.findAllByUserId 默认返回所有，这里我们需要过滤 is_checked=1 的
-        // 或者直接在内存中过滤
+        // 清理无效购物车项（商品已删除或失效）
+        cartMapper.deleteInvalidByUserId(userId);
+        // 查询购物车
         List<CartVO> cartList = cartMapper.findAllByUserId(userId);
         List<CartVO> checkedItems = new ArrayList<>();
         BigDecimal totalAmount = BigDecimal.ZERO;
 
         for (CartVO cart : cartList) {
-            if (cart.getIsChecked() == 1) {
+            if (cart.getIsChecked() == 1 && cart.getPrice() != null) {
                 checkedItems.add(cart);
                 // 计算总价: price * quantity
                 BigDecimal itemTotal = cart.getPrice().multiply(new BigDecimal(cart.getQuantity()));
@@ -63,7 +68,15 @@ public class OrderServiceImpl implements OrderService {
         order.setVerifyCode(verifyCode);
         order.setRemark(remark);
         
-        // 3. 插入主订单
+        for (CartVO cart : checkedItems) {
+            com.leyi.snack.entity.Goods goods = goodsMapper.selectById(cart.getGoodsId());
+            if (goods == null || goods.getStock() == null || goods.getStock() < cart.getQuantity()) {
+                throw new RuntimeException("库存不足");
+            }
+            goodsMapper.reduceStock(cart.getGoodsId(), cart.getQuantity());
+        }
+
+        // 插入主订单
         orderMapper.save(order);
 
         // 4. 插入订单明细
@@ -80,8 +93,8 @@ public class OrderServiceImpl implements OrderService {
         }
         orderItemMapper.batchSave(orderItems);
 
-        // 5. 清空购物车 (只清空已选中的)
-        cartMapper.deleteChecked(userId);
+        // 清空购物车
+        cartMapper.deleteByUserId(userId);
 
         return orderNo;
     }

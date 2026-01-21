@@ -11,7 +11,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
+import com.leyi.snack.dto.CartAddDTO;
+import com.leyi.snack.dto.CartUpdateDTO;
 
 @RestController
 @RequestMapping("/cart")
@@ -52,12 +53,9 @@ public class CartController {
     }
 
     @PostMapping("/add")
-    public Result<String> add(@RequestBody Map<String, Object> params) {
+    public Result<String> add(@RequestBody CartAddDTO dto) {
         Long userId = getUserId();
-        Long goodsId = Long.valueOf(params.get("goodsId").toString());
-        Integer quantity = Integer.valueOf(params.get("quantity").toString());
-        
-        cartService.add(userId, goodsId, quantity);
+        cartService.addToCart(userId, dto);
         return Result.success("加入购物车成功");
     }
 
@@ -68,13 +66,9 @@ public class CartController {
     }
 
     @PostMapping("/update")
-    public Result<String> update(@RequestBody Map<String, Object> params) {
-        // 鉴权检查
+    public Result<String> update(@RequestBody CartUpdateDTO dto) {
         getUserId();
-        Long id = Long.valueOf(params.get("id").toString());
-        Integer quantity = Integer.valueOf(params.get("quantity").toString());
-        
-        cartService.update(id, quantity);
+        cartService.update(dto.getId(), dto.getQuantity());
         return Result.success("更新成功");
     }
 

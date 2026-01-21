@@ -8,6 +8,10 @@
         SELECT * FROM goods WHERE is_deleted = 0 ORDER BY created_at DESC
     </select>
 
+    <select id="selectById" resultType="com.leyi.snack.entity.Goods">
+        SELECT * FROM goods WHERE id = #{id}
+    </select>
+
     <insert id="save" parameterType="com.leyi.snack.entity.Goods" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO goods (
             category_id, name, price, stock, bar_code, image_url, 
@@ -40,5 +44,9 @@
     <select id="countLowStock" resultType="java.lang.Integer">
         SELECT COUNT(*) FROM goods WHERE is_deleted = 0 AND stock &lt; #{threshold}
     </select>
+
+    <update id="reduceStock">
+        UPDATE goods SET stock = stock - #{delta} WHERE id = #{id}
+    </update>
 
 </mapper>

@@ -41,4 +41,15 @@
         DELETE FROM cart WHERE user_id = #{userId} AND is_checked = 1
     </delete>
 
+    <delete id="deleteByUserId">
+        DELETE FROM cart WHERE user_id = #{userId}
+    </delete>
+
+    <!-- 清理无效购物车项：商品已被删除 -->
+    <delete id="deleteInvalidByUserId">
+        DELETE FROM cart 
+        WHERE user_id = #{userId}
+          AND goods_id NOT IN (SELECT id FROM goods WHERE is_deleted = 0)
+    </delete>
+
 </mapper>

@@ -22,12 +22,12 @@
         <!-- 右侧操作区 -->
         <div class="actions">
           <div class="action-item" @click="goCart">
-            <el-badge :value="0" class="cart-badge" :hidden="true">
+            <el-badge :value="cartCount" class="cart-badge" :hidden="cartCount===0">
               <el-icon :size="24"><ShoppingCart /></el-icon>
             </el-badge>
             <span class="action-text">购物车</span>
           </div>
-          
+
           <div class="action-item" @click="goOrders">
             <el-icon :size="24"><List /></el-icon>
             <span class="action-text">我的订单</span>
@@ -59,23 +59,19 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Search, ShoppingCart, List } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useCartStore } from '../stores/cart'
 
 const router = useRouter()
 const searchKeyword = ref('')
+const cartStore = useCartStore()
+const cartCount = ref(0)
 
-const goCart = () => {
-  // router.push('/cart')
-  ElMessage.info('购物车功能开发中...')
-}
-
-const goOrders = () => {
-  // router.push('/orders')
-  ElMessage.info('订单功能开发中...')
-}
+const goCart = () => { router.push('/cart') }
+const goOrders = () => { router.push('/order') }
 
 const handleCommand = (command) => {
   if (command === 'logout') {
@@ -90,6 +86,11 @@ const handleCommand = (command) => {
     })
   }
 }
+
+onMounted(async () => {
+  await cartStore.refresh()
+  cartCount.value = cartStore.count
+})
 </script>
 
 <style scoped>

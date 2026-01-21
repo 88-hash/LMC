@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import com.leyi.snack.dto.OrderCreateDTO;
 
 @RestController
 @RequestMapping("/order")
@@ -42,10 +43,9 @@ public class OrderController {
     }
 
     @PostMapping("/create")
-    public Result<String> create(@RequestBody Map<String, String> params) {
+    public Result<String> create(@RequestBody OrderCreateDTO dto) {
         Long userId = getUserId();
-        String remark = params.get("remark");
-        String orderNo = orderService.createOrder(userId, remark);
+        String orderNo = orderService.createOrder(userId, dto.getRemark());
         return Result.success(orderNo);
     }
 
