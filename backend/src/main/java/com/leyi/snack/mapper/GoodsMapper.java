@@ -16,4 +16,8 @@ public interface GoodsMapper {
     Integer countLowStock(@Param("threshold") int threshold);
     Goods selectById(@Param("id") Long id);
     int reduceStock(@Param("id") Long id, @Param("delta") Integer delta);
+    
+    // 风险预警
+    List<com.leyi.snack.vo.DashboardFullVO.RiskGoods> selectExpiringGoods(@Param("days") int days);
+    List<com.leyi.snack.vo.DashboardFullVO.RiskGoods> selectLowStockGoodsList(@Param("threshold") int threshold);
 }

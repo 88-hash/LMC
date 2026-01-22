@@ -16,4 +16,13 @@
         SELECT * FROM order_item WHERE order_id = #{orderId}
     </select>
 
+    <select id="selectTopSelling" resultType="com.leyi.snack.vo.DashboardFullVO$TopGoods">
+        SELECT 
+            goods_name as goodsName, 
+            SUM(quantity) as quantity
+        FROM order_item
+        GROUP BY goods_id, goods_name
+        ORDER BY quantity DESC
+        LIMIT #{limit}
+    </select>
 </mapper>

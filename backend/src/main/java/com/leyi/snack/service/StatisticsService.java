@@ -1,7 +1,8 @@
 package com.leyi.snack.service;
 
-import com.leyi.snack.entity.DashboardStatsVO;
+import com.leyi.snack.vo.DashboardFullVO;
 
 public interface StatisticsService {
-    DashboardStatsVO getDashboardStats();
+    // 升级后的仪表盘接口
+    DashboardFullVO getDashboardStats();
 }

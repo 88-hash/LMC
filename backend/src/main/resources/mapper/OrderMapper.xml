@@ -69,4 +69,24 @@
         </where>
     </select>
 
+    <!-- 统计趋势 (近N天) -->
+    <select id="selectSalesTrend" resultType="java.util.Map">
+        SELECT 
+            DATE_FORMAT(updated_at, '%Y-%m-%d') as date, 
+            SUM(total_amount) as amount
+        FROM orders
+        WHERE status = 1 
+          AND updated_at >= DATE_SUB(CURDATE(), INTERVAL #{days} DAY)
+        GROUP BY DATE_FORMAT(updated_at, '%Y-%m-%d')
+        ORDER BY date ASC
+    </select>
+
+    <select id="countTotalOrders" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM orders
+    </select>
+
+    <select id="countVerifiedOrders" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM orders WHERE status = 1
+    </select>
+
 </mapper>

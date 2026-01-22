@@ -49,4 +49,21 @@
         UPDATE goods SET stock = stock - #{delta} WHERE id = #{id}
     </update>
 
+    <!-- 临期商品 (未来30天过期) -->
+    <select id="selectExpiringGoods" resultType="com.leyi.snack.vo.DashboardFullVO$RiskGoods">
+        SELECT id, name, stock, '即将过期' as type
+        FROM goods 
+        WHERE is_deleted = 0 
+          AND expire_date IS NOT NULL 
+          AND expire_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL #{days} DAY)
+    </select>
+
+    <!-- 低库存商品详情 -->
+    <select id="selectLowStockGoodsList" resultType="com.leyi.snack.vo.DashboardFullVO$RiskGoods">
+        SELECT id, name, stock, '库存不足' as type
+        FROM goods 
+        WHERE is_deleted = 0 
+          AND stock &lt; #{threshold}
+    </select>
+
 </mapper>
