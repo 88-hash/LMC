@@ -5,7 +5,7 @@
 <mapper namespace="com.leyi.snack.mapper.OrderMapper">
 
     <insert id="save" parameterType="com.leyi.snack.entity.Order" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO orders (
+        INSERT INTO `order` (
             order_no, user_id, total_amount, status, verify_code, remark
         ) VALUES (
             #{orderNo}, #{userId}, #{totalAmount}, #{status}, #{verifyCode}, #{remark}
@@ -13,44 +13,50 @@
     </insert>
 
     <select id="selectByOrderNo" resultType="com.leyi.snack.entity.Order">
-        SELECT * FROM orders WHERE order_no = #{orderNo}
+        SELECT * FROM `order` WHERE order_no = #{orderNo}
     </select>
 
     <select id="selectByVerifyCode" resultType="com.leyi.snack.entity.Order">
-        SELECT * FROM orders WHERE verify_code = #{verifyCode}
+        SELECT * FROM `order` WHERE verify_code = #{verifyCode}
     </select>
 
     <select id="selectByUserId" resultType="com.leyi.snack.entity.Order">
-        SELECT * FROM orders WHERE user_id = #{userId} ORDER BY created_at DESC
+        SELECT * FROM `order` WHERE user_id = #{userId} ORDER BY created_at DESC
     </select>
 
     <select id="selectById" resultType="com.leyi.snack.entity.Order">
-        SELECT * FROM orders WHERE id = #{id}
+        SELECT * FROM `order` WHERE id = #{id}
     </select>
 
     <update id="updateStatus">
-        UPDATE orders SET status = #{status} WHERE id = #{id}
+        UPDATE `order` SET status = #{status} WHERE id = #{id}
     </update>
 
     <!-- 统计今日营业额 (状态为1已完成，且更新时间是今天) -->
     <select id="sumTodaySales" resultType="java.math.BigDecimal">
-        SELECT IFNULL(SUM(total_amount), 0) FROM orders 
+        SELECT IFNULL(SUM(total_amount), 0) FROM `order` 
         WHERE status = 1 AND DATE(updated_at) = CURDATE()
     </select>
 
     <!-- 统计今日订单数 (创建时间是今天) -->
     <select id="countTodayOrders" resultType="java.lang.Integer">
-        SELECT COUNT(*) FROM orders WHERE DATE(created_at) = CURDATE()
+        SELECT COUNT(*) FROM `order` WHERE DATE(created_at) = CURDATE()
+    </select>
+    
+    <!-- 统计今日核销数 -->
+    <select id="countTodayVerifiedOrders" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM `order` 
+        WHERE status = 1 AND DATE(updated_at) = CURDATE()
     </select>
 
     <!-- 统计待核销订单 (状态0) -->
     <select id="countPendingOrders" resultType="java.lang.Integer">
-        SELECT COUNT(*) FROM orders WHERE status = 0
+        SELECT COUNT(*) FROM `order` WHERE status = 0
     </select>
 
     <!-- 管理员查询列表 -->
     <select id="selectAll" resultType="com.leyi.snack.entity.Order">
-        SELECT * FROM orders
+        SELECT * FROM `order`
         <where>
             <if test="status != null">
                 AND status = #{status}
@@ -61,7 +67,7 @@
     </select>
 
     <select id="countAll" resultType="java.lang.Integer">
-        SELECT COUNT(*) FROM orders
+        SELECT COUNT(*) FROM `order`
         <where>
             <if test="status != null">
                 AND status = #{status}
@@ -74,19 +80,29 @@
         SELECT 
             DATE_FORMAT(updated_at, '%Y-%m-%d') as date, 
             SUM(total_amount) as amount
-        FROM orders
+        FROM `order`
         WHERE status = 1 
           AND updated_at >= DATE_SUB(CURDATE(), INTERVAL #{days} DAY)
         GROUP BY DATE_FORMAT(updated_at, '%Y-%m-%d')
         ORDER BY date ASC
     </select>
+    
+    <!-- 24小时时段热力 -->
+    <select id="selectHourlyOrderCounts" resultType="java.util.Map">
+        SELECT 
+            HOUR(created_at) as hour, 
+            COUNT(*) as count 
+        FROM `order` 
+        GROUP BY hour
+        ORDER BY hour ASC
+    </select>
 
     <select id="countTotalOrders" resultType="java.lang.Integer">
-        SELECT COUNT(*) FROM orders
+        SELECT COUNT(*) FROM `order`
     </select>
 
     <select id="countVerifiedOrders" resultType="java.lang.Integer">
-        SELECT COUNT(*) FROM orders WHERE status = 1
+        SELECT COUNT(*) FROM `order` WHERE status = 1
     </select>
 
 </mapper>

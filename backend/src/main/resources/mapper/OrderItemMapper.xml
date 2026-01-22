@@ -25,4 +25,17 @@
         ORDER BY quantity DESC
         LIMIT #{limit}
     </select>
+
+    <!-- 品类销售占比 -->
+    <select id="selectCategorySalesShare" resultType="com.leyi.snack.vo.DashboardFullVO$CategoryShare">
+        SELECT 
+            c.name as name, 
+            SUM(oi.price * oi.quantity) as value
+        FROM order_item oi
+        JOIN goods g ON oi.goods_id = g.id
+        JOIN category c ON g.category_id = c.id
+        JOIN `order` o ON oi.order_id = o.id
+        WHERE o.status = 1
+        GROUP BY c.name
+    </select>
 </mapper>

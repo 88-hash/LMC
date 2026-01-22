@@ -26,6 +26,8 @@ public interface OrderMapper {
     
     // 新增统计方法
     List<java.util.Map<String, Object>> selectSalesTrend(@Param("days") int days);
+    List<java.util.Map<String, Object>> selectHourlyOrderCounts();
+    Integer countTodayVerifiedOrders();
     Integer countTotalOrders();
     Integer countVerifiedOrders();
 }

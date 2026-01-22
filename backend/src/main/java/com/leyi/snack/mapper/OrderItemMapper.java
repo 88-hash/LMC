@@ -12,4 +12,7 @@ public interface OrderItemMapper {
     
     // Top10
     List<com.leyi.snack.vo.DashboardFullVO.TopGoods> selectTopSelling(@Param("limit") int limit);
+    
+    // 品类占比
+    List<com.leyi.snack.vo.DashboardFullVO.CategoryShare> selectCategorySalesShare();
 }

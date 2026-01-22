@@ -30,10 +30,11 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         // 0. 暴力重置表结构 (修复字段缺失问题)
         jdbcTemplate.execute("DROP TABLE IF EXISTS `order_item`");
-        jdbcTemplate.execute("DROP TABLE IF EXISTS `orders`");
+        jdbcTemplate.execute("DROP TABLE IF EXISTS `orders`"); // 旧表名
+        jdbcTemplate.execute("DROP TABLE IF EXISTS `order`");  // 新表名
 
         // 1. 确保表结构存在 (兼容 `init.sql`)
-        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS `orders` (" +
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS `order` (" +
                 "  `id` bigint(20) NOT NULL AUTO_INCREMENT," +
                 "  `order_no` varchar(64) NOT NULL," +
                 "  `user_id` bigint(20) NOT NULL," +

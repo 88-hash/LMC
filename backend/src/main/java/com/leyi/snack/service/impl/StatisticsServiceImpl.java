@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,24 +33,26 @@ public class StatisticsServiceImpl implements StatisticsService {
 
         // 1. 概览数据
         DashboardFullVO.Overview overview = new DashboardFullVO.Overview();
+        
+        // 今日营业额
         BigDecimal todaySales = orderMapper.sumTodaySales();
         overview.setTodaySales(todaySales != null ? todaySales : BigDecimal.ZERO);
-
-        Integer totalOrders = orderMapper.countTotalOrders();
-        Integer verifiedOrders = orderMapper.countVerifiedOrders();
-        if (totalOrders != null && totalOrders > 0) {
-            double rate = (double) verifiedOrders / totalOrders * 100;
-            overview.setVerifyRate(String.format("%.1f%%", rate));
+        
+        // 今日订单量
+        Integer todayOrderCount = orderMapper.countTodayOrders();
+        overview.setTodayOrderCount(todayOrderCount != null ? todayOrderCount : 0);
+        
+        // 今日核销数 (用于计算ATV)
+        Integer todayVerified = orderMapper.countTodayVerifiedOrders();
+        if (todayVerified != null && todayVerified > 0 && todaySales != null) {
+            overview.setAverageTicketValue(todaySales.divide(new BigDecimal(todayVerified), 2, RoundingMode.HALF_UP));
         } else {
-            overview.setVerifyRate("0%");
+            overview.setAverageTicketValue(BigDecimal.ZERO);
         }
 
+        // 待核销数
         Integer pending = orderMapper.countPendingOrders();
         overview.setPendingVerify(pending != null ? pending : 0);
-
-        // 风险商品数 = 低库存 + 临期
-        Integer lowStockCount = goodsMapper.countLowStock(10);
-        overview.setWarningCount(lowStockCount != null ? lowStockCount : 0); // 暂时只统计库存
         
         vo.setOverview(overview);
 
@@ -82,6 +85,32 @@ public class StatisticsServiceImpl implements StatisticsService {
         if (expiring != null) riskList.addAll(expiring);
         
         vo.setRiskGoods(riskList);
+        
+        // 5. 品类占比
+        List<DashboardFullVO.CategoryShare> shares = orderItemMapper.selectCategorySalesShare();
+        vo.setCategoryShare(shares != null ? shares : new ArrayList<>());
+        
+        // 6. 24小时时段热力
+        DashboardFullVO.HourlyStats hourlyStats = new DashboardFullVO.HourlyStats();
+        List<String> hours = new ArrayList<>();
+        List<Integer> counts = new ArrayList<>();
+        // 初始化 0-23
+        int[] hourCounts = new int[24];
+        List<Map<String, Object>> hourlyData = orderMapper.selectHourlyOrderCounts();
+        if (hourlyData != null) {
+            for (Map<String, Object> map : hourlyData) {
+                int h = Integer.parseInt(map.get("hour").toString());
+                int c = Integer.parseInt(map.get("count").toString());
+                if (h >= 0 && h < 24) hourCounts[h] = c;
+            }
+        }
+        for (int i = 0; i < 24; i++) {
+            hours.add(i + "点");
+            counts.add(hourCounts[i]);
+        }
+        hourlyStats.setHours(hours);
+        hourlyStats.setCounts(counts);
+        vo.setHourlyStats(hourlyStats);
 
         return vo;
     }

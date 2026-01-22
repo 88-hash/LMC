@@ -1,16 +1,16 @@
 <template>
   <div class="admin-layout">
-    <!-- 侧边栏 -->
+    <!-- 侧边栏 ("奶油威化饼风格") -->
     <aside class="sidebar">
       <div class="logo-area">
-        <h1>🍪 乐逸零食后台</h1>
+        <h1>🍪 乐逸零食 Pro</h1>
       </div>
       <el-menu
         :default-active="activeMenu"
         class="admin-menu"
-        background-color="#304156"
-        text-color="#bfcbd9"
-        active-text-color="#409eff"
+        background-color="transparent"
+        text-color="#8854D0"
+        active-text-color="#FFFFFF"
         router
       >
         <el-menu-item index="/admin/dashboard">
@@ -48,7 +48,8 @@
         <div class="right">
           <el-dropdown trigger="click" @command="handleCommand">
             <span class="avatar-wrapper">
-              {{ adminName }}
+              <el-avatar :size="32" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
+              <span class="username">{{ adminName }}</span>
               <el-icon class="el-icon--right"><arrow-down /></el-icon>
             </span>
             <template #dropdown>
@@ -84,11 +85,13 @@ const activeMenu = computed(() => route.path)
 const currentRouteName = computed(() => route.meta.title || '当前页面')
 
 const adminInfo = JSON.parse(localStorage.getItem('adminInfo') || '{}')
-const adminName = ref(adminInfo.name || 'Admin')
+const adminName = ref(adminInfo.name || '超级店长')
 
 const handleCommand = (command) => {
   if (command === 'logout') {
     ElMessageBox.confirm('确定要退出后台管理系统吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
       type: 'warning'
     }).then(() => {
       localStorage.removeItem('adminToken')
@@ -105,81 +108,124 @@ const handleCommand = (command) => {
   display: flex;
   height: 100vh;
   width: 100%;
+  background-color: #F7F1E3; /* 奶茶色背景 */
 }
 
+/* 侧边栏美化 - 奶油威化风格 */
 .sidebar {
-  width: 210px;
-  background-color: #304156;
+  width: 240px;
+  background-color: #FFFBF0; /* 暖奶油色 */
   height: 100%;
   display: flex;
   flex-direction: column;
+  box-shadow: 4px 0 16px rgba(255, 159, 67, 0.1); /* 暖色阴影 */
+  z-index: 1001;
+  border-right: 2px solid #FFF0DA;
 }
 
 .logo-area {
-  height: 50px;
+  height: 70px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #2b2f3a;
-  color: white;
+  border-bottom: 2px dashed #FFD3B6; /* 虚线分割，更像饼干包装 */
 }
 
 .logo-area h1 {
-  font-size: 18px;
+  font-size: 22px;
   margin: 0;
-  font-weight: 600;
+  font-weight: 800;
+  color: #FF6B6B; /* 西瓜红 */
   letter-spacing: 1px;
+  text-shadow: 1px 1px 0px #FFD3B6;
 }
 
 .admin-menu {
   border-right: none;
   flex: 1;
+  padding-top: 16px;
+}
+
+/* 菜单项美化 - 果汁软糖风格 */
+.el-menu-item {
+  height: 54px;
+  line-height: 54px;
+  margin: 8px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.el-menu-item:hover {
+  background-color: #FFF0DA !important; /* 浅橙色悬停 */
+  color: #FF9F43;
+}
+
+.el-menu-item.is-active {
+  background: linear-gradient(135deg, #FF9F43 0%, #FF6B6B 100%) !important; /* 橙红渐变 */
+  color: #FFFFFF;
+  box-shadow: 0 4px 10px rgba(255, 107, 107, 0.4); /* 弥散光 */
+  transform: translateY(-1px);
 }
 
 .main-container {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #f0f2f5;
   overflow: hidden;
 }
 
 .navbar {
-  height: 50px;
-  background: white;
-  box-shadow: 0 1px 4px rgba(0,21,41,.08);
+  height: 70px;
+  background: #FFFFFF;
+  border-bottom: 2px solid #F0E6D2;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 30px;
 }
 
 .avatar-wrapper {
   cursor: pointer;
   display: flex;
   align-items: center;
-  color: #333;
+  gap: 10px;
+  color: #2D3436; /* 深巧克力色 */
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background-color: #FFFBF0;
+  border: 1px solid #FFEAA7;
+  transition: all 0.3s;
+}
+
+.avatar-wrapper:hover {
+  background: #FFEAA7;
+  transform: scale(1.02);
 }
 
 .app-main {
   flex: 1;
-  padding: 20px;
+  padding: 24px;
   overflow-y: auto;
+  background-color: #F7F1E3; /* 奶茶色 */
+  background-image: radial-gradient(#EAD8B1 1px, transparent 1px); /* 波点纹理 */
+  background-size: 20px 20px;
 }
 
 /* 页面切换动画 */
 .fade-transform-leave-active,
 .fade-transform-enter-active {
-  transition: all 0.3s;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); /* 弹跳效果 */
 }
 
 .fade-transform-enter-from {
   opacity: 0;
-  transform: translateX(-30px);
+  transform: scale(0.95) translateY(10px);
 }
 
 .fade-transform-leave-to {
   opacity: 0;
-  transform: translateX(30px);
+  transform: scale(1.05);
 }
 </style>
