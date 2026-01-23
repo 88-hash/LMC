@@ -25,16 +25,26 @@
           <div class="search-box">
             <el-input
               v-model="keyword"
-              placeholder="搜索订单号或备注..."
+              placeholder="请输入核销码或手机号查询..."
               clearable
               prefix-icon="Search"
               style="width: 300px"
-            />
+              @keyup.enter="handleSearch"
+            >
+              <template #append>
+                <el-button @click="handleSearch">查询</el-button>
+              </template>
+            </el-input>
           </div>
         </div>
       </template>
 
-      <el-table :data="filteredList" stripe style="width: 100%" v-loading="loading">
+      <!-- 空状态 -->
+      <!-- <div v-if="!hasSearched" class="empty-state">
+        <el-empty description="请输入条件进行查询" :image-size="200" />
+      </div> -->
+
+      <el-table :data="pendingList" stripe style="width: 100%" v-loading="loading">
         <el-table-column prop="orderNo" label="订单号" min-width="180">
           <template #default="{ row }">
             <span class="order-no">{{ row.orderNo }}</span>
@@ -82,39 +92,56 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Timer, Search, Check } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '../../utils/request'
+import dayjs from 'dayjs'
 
 const loading = ref(false)
-const pendingList = ref([])
+const pendingList = ref([]) // 当前展示的列表
+const allPendingList = ref([]) // 所有待核销数据（用于统计和前端筛选）
 const keyword = ref('')
+const hasSearched = ref(false)
 
-// 过滤列表
-const filteredList = computed(() => {
-  if (!keyword.value) return pendingList.value
-  const k = keyword.value.toLowerCase()
-  return pendingList.value.filter(item => 
-    item.orderNo.toLowerCase().includes(k) || 
-    (item.remark && item.remark.toLowerCase().includes(k)) ||
-    (item.verifyCode && item.verifyCode.includes(k))
-  )
-})
-
-// 获取待核销列表
-const fetchPendingOrders = async () => {
+// 加载所有待核销数据
+const fetchAllPending = async () => {
   loading.value = true
   try {
     const res = await request.get('/verify/pending')
     if (res.code === 1) {
-      pendingList.value = res.data || []
+      allPendingList.value = res.data || []
+      // 默认展示所有
+      pendingList.value = allPendingList.value
     }
   } catch (error) {
     console.error(error)
   } finally {
     loading.value = false
   }
+}
+
+// 搜索/过滤
+const handleSearch = async () => {
+  loading.value = true
+  // 模拟网络延迟感，或者直接前端过滤
+  setTimeout(() => {
+    if (!keyword.value) {
+      pendingList.value = allPendingList.value
+    } else {
+      const k = keyword.value.toLowerCase()
+      pendingList.value = allPendingList.value.filter(item => 
+        item.orderNo.toLowerCase().includes(k) || 
+        (item.remark && item.remark.toLowerCase().includes(k)) ||
+        (item.verifyCode && item.verifyCode.includes(k))
+      )
+    }
+    
+    if (pendingList.value.length === 0) {
+      ElMessage.info('未找到匹配的待核销订单')
+    }
+    loading.value = false
+  }, 200)
 }
 
 // 确认核销
@@ -133,7 +160,7 @@ const handleVerify = (row) => {
       const res = await request.post('/verify/confirm', { orderId: row.id })
       if (res.code === 1) {
         ElMessage.success('核销成功！')
-        fetchPendingOrders() // 刷新列表
+        fetchAllPending() // 重新拉取最新数据
       }
     } catch (error) {
       // 错误已由拦截器处理
@@ -142,18 +169,12 @@ const handleVerify = (row) => {
 }
 
 // 时间格式化
-const formatTime = (arr) => {
-  if (!arr) return ''
-  if (Array.isArray(arr)) {
-    // 处理 LocalDateTime 数组 [2023, 1, 1, 12, 0, 0]
-    const [y, m, d, h, min, s] = arr
-    return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')} ${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`
-  }
-  return arr
+const formatTime = (time) => {
+  return dayjs(time).format('YYYY-MM-DD HH:mm:ss')
 }
 
 onMounted(() => {
-  fetchPendingOrders()
+  fetchAllPending()
 })
 </script>
 

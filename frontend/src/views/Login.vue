@@ -80,24 +80,34 @@ const rules = {
   ],
   code: [
     { required: true, message: '请输入验证码', trigger: 'blur' },
-    { len: 4, message: '验证码为4位数字', trigger: 'blur' }
+    { len: 6, message: '验证码为6位数字', trigger: 'blur' }
   ]
 }
 
-// 模拟发送验证码
-const handleSendCode = () => {
+// 发送验证码
+const handleSendCode = async () => {
   if (!/^1[3-9]\d{9}$/.test(loginForm.phone)) {
     return ElMessage.warning('请先输入正确的手机号')
   }
-  
-  ElMessage.success('验证码已发送：1234')
-  timer.value = 60
-  const interval = setInterval(() => {
-    timer.value--
-    if (timer.value <= 0) {
-      clearInterval(interval)
+
+  try {
+    const res = await request.post('/user/code', { phone: loginForm.phone })
+    if (res.code === 1) {
+      ElMessage.success('验证码已发送 (请查看后端控制台)')
+      
+      timer.value = 60
+      const interval = setInterval(() => {
+        timer.value--
+        if (timer.value <= 0) {
+          clearInterval(interval)
+        }
+      }, 1000)
+    } else {
+      ElMessage.error(res.message || '发送失败')
     }
-  }, 1000)
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 // 登录逻辑
@@ -106,27 +116,21 @@ const handleLogin = async () => {
   
   await loginFormRef.value.validate(async (valid) => {
     if (valid) {
-      if (loginForm.code !== '1234') {
-        return ElMessage.error('验证码错误 (测试验证码: 1234)')
-      }
-
       loading.value = true
       try {
-        // 后端接口是 POST /user/login?phone=xxx
-        // axios post 的第二个参数是 body，第三个参数是 config (包含 params)
-        const res = await request.post('/user/login', null, {
-          params: {
-            phone: loginForm.phone
-          }
+        const res = await request.post('/user/login', {
+          phone: loginForm.phone,
+          code: loginForm.code
         })
 
         if (res.code === 1) {
           ElMessage.success('登录成功，欢迎回来！')
           localStorage.setItem('token', res.data.token)
-          // 也可以存一下用户信息
           localStorage.setItem('userInfo', JSON.stringify(res.data))
           
           router.push('/')
+        } else {
+          ElMessage.error(res.message || '登录失败')
         }
       } catch (error) {
         console.error(error)

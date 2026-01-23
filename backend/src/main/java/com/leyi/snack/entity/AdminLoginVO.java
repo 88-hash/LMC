@@ -12,5 +12,7 @@ import lombok.NoArgsConstructor;
 public class AdminLoginVO {
     private Long id;
     private String name;
+    private String phone;
+    private String avatar;
     private String token;
 }

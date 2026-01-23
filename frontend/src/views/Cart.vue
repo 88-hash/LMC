@@ -91,18 +91,9 @@ const removeItem = async (item) => {
   }
 }
 
-const checkout = async () => {
-  loading.value = true
-  try {
-    const res = await request.post('/order/create', { remark: '在线结算' })
-    if (res.code === 1) {
-      ElMessage.success('下单成功')
-      await load()
-      router.push('/order')
-    }
-  } finally {
-    loading.value = false
-  }
+const checkout = () => {
+  if (items.value.length === 0) return ElMessage.warning('请先选购商品')
+  router.push('/confirm')
 }
 
 onMounted(load)

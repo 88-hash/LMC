@@ -11,8 +11,11 @@ const routes = [
     component: () => import('../views/Layout.vue'),
     children: [
       { path: '', name: 'Home', component: () => import('../views/Home.vue') },
-      { path: 'cart', name: 'Cart', component: () => import('../views/Cart.vue') },
-      { path: 'order', name: 'Order', component: () => import('../views/Order.vue') },
+      { path: 'cart', name: 'Cart', component: () => import('../views/Cart.vue'), meta: { requiresAuth: true } },
+      { path: 'confirm', name: 'OrderConfirm', component: () => import('../views/OrderConfirm.vue'), meta: { requiresAuth: true } },
+      { path: 'cashier', name: 'Cashier', component: () => import('../views/Cashier.vue'), meta: { requiresAuth: true } },
+      { path: 'order', name: 'Order', component: () => import('../views/Order.vue'), meta: { requiresAuth: true } },
+      { path: 'profile', name: 'Profile', component: () => import('../views/Profile.vue'), meta: { requiresAuth: true } },
       { path: 'category', name: 'Category', component: () => import('../views/admin/Category.vue') },
       { path: 'goods', name: 'Goods', component: () => import('../views/admin/Goods.vue') }
     ]
@@ -28,28 +31,34 @@ const routes = [
     component: () => import('../views/admin/Layout.vue'),
     redirect: '/admin/dashboard',
     children: [
-      { path: 'dashboard', name: 'AdminDashboard', component: () => import('../views/admin/Dashboard.vue'), meta: { title: '控制台' } },
-      { path: 'category', name: 'AdminCategory', component: () => import('../views/admin/Category.vue'), meta: { title: '分类管理' } },
-      { path: 'goods', name: 'AdminGoods', component: () => import('../views/admin/Goods.vue'), meta: { title: '商品管理' } },
-      { path: 'orders', component: () => import('../views/admin/Dashboard.vue'), meta: { title: '订单管理' } },
-      { path: 'verify', name: 'AdminVerify', component: () => import('../views/admin/Verify.vue'), meta: { title: '核销中心' } }
+      { path: 'dashboard', name: 'AdminDashboard', component: () => import('../views/admin/Dashboard.vue'), meta: { title: '控制台', requiresAuth: true } },
+      { path: 'category', name: 'AdminCategory', component: () => import('../views/admin/Category.vue'), meta: { title: '分类管理', requiresAuth: true } },
+      { path: 'goods', name: 'AdminGoods', component: () => import('../views/admin/Goods.vue'), meta: { title: '商品管理', requiresAuth: true } },
+      { path: 'orders', name: 'AdminOrders', component: () => import('../views/admin/AdminOrders.vue'), meta: { title: '订单管理', requiresAuth: true } },
+      { path: 'verify', name: 'AdminVerify', component: () => import('../views/admin/Verify.vue'), meta: { title: '核销中心', requiresAuth: true } }
     ]
   }
 ]
 
 const router = createRouter({ history: createWebHistory(), routes })
 
-// 路由守卫（前台/后台分离校验）
+// 路由守卫
 router.beforeEach((to, from, next) => {
+  // 后台鉴权
   if (to.path.startsWith('/admin')) {
     if (to.path === '/admin/login') return next()
     const adminToken = localStorage.getItem('adminToken')
     return adminToken ? next() : next('/admin/login')
-  } else {
-    if (to.path === '/login') return next()
+  } 
+  
+  // 前台鉴权 (只拦截 requiresAuth)
+  if (to.meta.requiresAuth) {
     const token = localStorage.getItem('token')
-    return token ? next() : next('/login')
+    if (!token) {
+      return next('/login')
+    }
   }
+  next()
 })
 
 export default router

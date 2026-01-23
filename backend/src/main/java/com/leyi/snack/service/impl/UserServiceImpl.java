@@ -8,11 +8,16 @@ import com.leyi.snack.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Random;
 import java.util.Map;
+import java.util.HashMap;
 
 @Service
 public class UserServiceImpl implements UserService {
+
+    // 模拟验证码缓存 (生产环境应使用 Redis)
+    private static final Map<String, String> codeCache = new ConcurrentHashMap<>();
 
     @Autowired
     private UserMapper userMapper;
@@ -21,7 +26,25 @@ public class UserServiceImpl implements UserService {
     private JwtUtils jwtUtils;
 
     @Override
-    public AdminLoginVO login(String phone) {
+    public void sendCode(String phone) {
+        // 生成6位随机验证码
+        String code = String.valueOf(new Random().nextInt(899999) + 100000);
+        codeCache.put(phone, code);
+        
+        // 模拟短信发送
+        System.out.println("【模拟短信】手机号 " + phone + " 的验证码是：" + code);
+    }
+
+    @Override
+    public AdminLoginVO login(String phone, String code) {
+        // 0. 校验验证码
+        String cachedCode = codeCache.get(phone);
+        if (cachedCode == null || !cachedCode.equals(code)) {
+            throw new RuntimeException("验证码错误或已过期");
+        }
+        // 验证通过后移除验证码 (防止重复使用)
+        codeCache.remove(phone);
+
         // 1. 查询用户
         User user = userMapper.selectByPhone(phone);
 
@@ -49,6 +72,8 @@ public class UserServiceImpl implements UserService {
         return AdminLoginVO.builder()
                 .id(user.getId())
                 .name(user.getName())
+                .phone(user.getPhone())
+                .avatar(user.getAvatar())
                 .token(token)
                 .build();
     }

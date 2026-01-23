@@ -4,8 +4,12 @@ import com.leyi.snack.entity.AdminLoginVO;
 
 public interface UserService {
     /**
-     * 用户登录（手机号自动注册）
-     * 复用 AdminLoginVO 返回 token
+     * 发送验证码
      */
-    AdminLoginVO login(String phone);
+    void sendCode(String phone);
+
+    /**
+     * 用户登录（手机号+验证码）
+     */
+    AdminLoginVO login(String phone, String code);
 }

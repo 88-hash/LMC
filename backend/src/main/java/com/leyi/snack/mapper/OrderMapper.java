@@ -21,8 +21,20 @@ public interface OrderMapper {
     Integer countPendingOrders();
 
     // --- 管理员订单列表 (带分页) ---
-    List<Order> selectAll(@Param("status") Integer status, @Param("offset") int offset, @Param("limit") int limit);
-    Integer countAll(@Param("status") Integer status);
+    List<Order> selectAll(
+        @Param("status") Integer status, 
+        @Param("keyword") String keyword,
+        @Param("startDate") String startDate,
+        @Param("endDate") String endDate,
+        @Param("offset") int offset, 
+        @Param("limit") int limit
+    );
+    Integer countAll(
+        @Param("status") Integer status,
+        @Param("keyword") String keyword,
+        @Param("startDate") String startDate,
+        @Param("endDate") String endDate
+    );
     
     // 新增统计方法
     List<java.util.Map<String, Object>> selectSalesTrend(@Param("days") int days);

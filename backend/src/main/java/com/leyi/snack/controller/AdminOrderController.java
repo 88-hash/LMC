@@ -21,8 +21,16 @@ public class AdminOrderController {
     public Result<Map<String, Object>> list(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) Integer status) {
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
         
-        return Result.success(orderService.listAll(status, page, size));
+        return Result.success(orderService.listAll(status, keyword, startDate, endDate, page, size));
+    }
+
+    @GetMapping("/detail")
+    public Result<Map<String, Object>> detail(@RequestParam Long id) {
+        return Result.success(orderService.detail(id));
     }
 }

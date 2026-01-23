@@ -25,7 +25,12 @@ public interface OrderService {
     Map<String, Object> detail(Long orderId);
 
     /**
-     * 管理员查询订单列表 (分页)
+     * 管理员查询订单列表 (分页 + 筛选)
      */
-    Map<String, Object> listAll(Integer status, int page, int size);
+    Map<String, Object> listAll(Integer status, String keyword, String startDate, String endDate, int page, int size);
+
+    /**
+     * 根据订单号查询 (收银台用)
+     */
+    Order getByOrderNo(String orderNo);
 }

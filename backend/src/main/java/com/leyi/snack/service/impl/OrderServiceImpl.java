@@ -137,10 +137,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Map<String, Object> listAll(Integer status, int page, int size) {
+    public Map<String, Object> listAll(Integer status, String keyword, String startDate, String endDate, int page, int size) {
         int offset = (page - 1) * size;
-        List<Order> orders = orderMapper.selectAll(status, offset, size);
-        Integer total = orderMapper.countAll(status);
+        List<Order> orders = orderMapper.selectAll(status, keyword, startDate, endDate, offset, size);
+        Integer total = orderMapper.countAll(status, keyword, startDate, endDate);
         
         Map<String, Object> result = new HashMap<>();
         result.put("list", orders);
@@ -148,5 +148,10 @@ public class OrderServiceImpl implements OrderService {
         result.put("page", page);
         result.put("size", size);
         return result;
+    }
+
+    @Override
+    public Order getByOrderNo(String orderNo) {
+        return orderMapper.selectByOrderNo(orderNo);
     }
 }
