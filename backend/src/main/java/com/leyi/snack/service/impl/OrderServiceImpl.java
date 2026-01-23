@@ -17,6 +17,10 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import com.leyi.snack.entity.Comment;
+import com.leyi.snack.mapper.CommentMapper;
+import java.util.stream.Collectors;
+
 @Service
 public class OrderServiceImpl implements OrderService {
 
@@ -25,6 +29,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private OrderItemMapper orderItemMapper;
+    
+    @Autowired
+    private CommentMapper commentMapper;
 
     @Autowired
     private CartMapper cartMapper;
@@ -116,9 +123,25 @@ public class OrderServiceImpl implements OrderService {
         }
         List<OrderItem> items = orderItemMapper.selectByOrderId(orderId);
         
+        List<Map<String, Object>> itemsWithComment = items.stream().map(item -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", item.getId());
+            map.put("orderId", item.getOrderId());
+            map.put("goodsId", item.getGoodsId());
+            map.put("goodsName", item.getGoodsName());
+            map.put("goodsImage", item.getGoodsImage());
+            map.put("price", item.getPrice());
+            map.put("quantity", item.getQuantity());
+            
+            Comment comment = commentMapper.selectByOrderItemId(item.getId());
+            map.put("comment", comment);
+            
+            return map;
+        }).collect(Collectors.toList());
+        
         Map<String, Object> result = new HashMap<>();
         result.put("order", order);
-        result.put("items", items);
+        result.put("items", itemsWithComment);
         return result;
     }
 

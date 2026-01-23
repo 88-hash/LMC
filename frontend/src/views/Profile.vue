@@ -20,6 +20,11 @@
           <span>购物车</span>
           <el-icon class="arrow"><ArrowRight /></el-icon>
         </div>
+        <div class="menu-item" @click="$router.push('/my-comments')">
+          <el-icon><ChatLineSquare /></el-icon>
+          <span>我的评价</span>
+          <el-icon class="arrow"><ArrowRight /></el-icon>
+        </div>
       </div>
       
       <el-button type="danger" round class="logout-btn" @click="handleLogout">
@@ -33,7 +38,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { List, ShoppingCart, ArrowRight } from '@element-plus/icons-vue'
+import { List, ShoppingCart, ArrowRight, ChatLineSquare } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userInfo = ref(JSON.parse(localStorage.getItem('userInfo') || '{}'))

@@ -23,32 +23,23 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public AdminLoginVO login(AdminLoginDTO adminLoginDTO) {
-        String phone = adminLoginDTO.getPhone();
-        String password = adminLoginDTO.getPassword();
-
-        // 1. 查询用户
-        Admin admin = adminMapper.selectByPhone(phone);
-
-        // 2. 校验账号是否存在
+        Admin admin = adminMapper.selectByPhone(adminLoginDTO.getPhone());
         if (admin == null) {
             throw new RuntimeException("账号不存在");
         }
-
-        // 3. 校验密码 (实际项目中建议加密存储，这里演示直接比对)
-        if (!admin.getPassword().equals(password)) {
+        if (!admin.getPassword().equals(adminLoginDTO.getPassword())) {
             throw new RuntimeException("密码错误");
         }
 
-        // 4. 生成 Token
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", admin.getId());
-        claims.put("role", admin.getRole());
+        claims.put("role", "admin");
         String token = jwtUtils.generateToken(claims);
 
-        // 5. 封装返回结果
         return AdminLoginVO.builder()
                 .id(admin.getId())
                 .name(admin.getName())
+                .phone(admin.getPhone())
                 .token(token)
                 .build();
     }

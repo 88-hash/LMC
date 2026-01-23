@@ -36,7 +36,6 @@ public class VerifyServiceImpl implements VerifyService {
 
     @Override
     public java.util.List<Order> listPending() {
-        // status=0 (待核销), keyword=null, startDate=null, endDate=null, offset=0, limit=1000
         return orderMapper.selectAll(0, null, null, null, 0, 1000);
     }
 

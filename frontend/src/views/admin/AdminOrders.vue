@@ -135,11 +135,27 @@
           <div class="section-title">商品明细</div>
           <div v-for="item in currentItems" :key="item.id" class="goods-item">
             <img :src="item.goodsImage || 'https://placehold.co/60'" class="goods-img" />
-            <div class="goods-info">
+              <div class="goods-info">
               <div class="name">{{ item.goodsName }}</div>
               <div class="price-row">
                 <span class="price">¥{{ item.price }}</span>
                 <span class="qty">x{{ item.quantity }}</span>
+              </div>
+              
+              <div v-if="item.comment" class="comment-box">
+                <div class="comment-header">
+                  <el-rate 
+                    v-model="item.comment.rating" 
+                    disabled 
+                    show-score 
+                    text-color="#ff9900" 
+                    size="small"
+                  />
+                  <span class="comment-time">{{ formatTime(item.comment.createdAt) }}</span>
+                </div>
+                <div class="comment-content">
+                  {{ item.comment.content }}
+                </div>
               </div>
             </div>
           </div>
@@ -376,4 +392,31 @@ const formatTime = (time) => {
 }
 .total-label { font-size: 14px; font-weight: bold; }
 .total-amount { font-size: 24px; color: #e74c3c; font-weight: 800; }
+
+.comment-box {
+  margin-top: 10px;
+  background: #fdf6ec;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #faecd8;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.comment-time {
+  font-size: 12px;
+  color: #909399;
+}
+
+.comment-content {
+  font-size: 13px;
+  color: #606266;
+  line-height: 1.4;
+  word-break: break-all;
+}
 </style>

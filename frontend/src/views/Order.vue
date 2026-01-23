@@ -26,7 +26,7 @@
             </div>
             <div class="foot">
               <el-button v-if="o.status===0" type="primary" plain @click="showVerify(o)">出示核销码</el-button>
-              <el-button v-else type="success" plain disabled>已完成</el-button>
+              <el-button v-else type="primary" plain @click="goComment(o.id)">去评价</el-button>
             </div>
           </div>
         </el-col>
@@ -45,8 +45,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import request from '../utils/request'
 
+const router = useRouter()
 const orders = ref([])
 const details = ref({})
 const verifyVisible = ref(false)
@@ -65,6 +67,7 @@ const load = async () => {
 }
 
 const showVerify = (o) => { currentOrder.value = o; verifyVisible.value = true }
+const goComment = (id) => { router.push(`/comment/add/${id}`) }
 
 onMounted(load)
 </script>

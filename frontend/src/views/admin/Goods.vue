@@ -55,9 +55,10 @@
           </template>
         </el-table-column>
         
-        <el-table-column label="操作" width="180" align="center" fixed="right">
+        <el-table-column label="操作" width="220" align="center" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" :icon="Edit" @click="handleEdit(row)">编辑</el-button>
+            <el-button link type="warning" :icon="ChatLineSquare" @click="handleReview(row)">评价</el-button>
             <el-button link type="danger" :icon="Delete" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -147,11 +148,28 @@
       </template>
     </el-dialog>
   </div>
+
+    <!-- 评价抽屉 -->
+    <el-drawer v-model="reviewDrawerVisible" title="商品评价" size="400px">
+      <div v-loading="reviewLoading">
+        <el-empty v-if="reviews.length === 0" description="暂无评价" />
+        <div v-else class="review-list">
+          <div v-for="r in reviews" :key="r.id" class="review-item">
+            <div class="r-head">
+                <span class="r-user">{{ maskPhone(r.userPhone) }}</span>
+                <el-rate v-model="r.rating" disabled size="small" text-color="#ff9900" />
+            </div>
+            <div class="r-content">{{ r.content }}</div>
+            <div class="r-time">{{ formatTime(r.createdAt) }}</div>
+          </div>
+        </div>
+      </div>
+    </el-drawer>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Plus, Edit, Delete, Picture } from '@element-plus/icons-vue'
+import { Plus, Edit, Delete, Picture, ChatLineSquare } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '../../utils/request'
 
@@ -162,6 +180,10 @@ const dialogVisible = ref(false)
 const dialogTitle = ref('新增商品')
 const submitLoading = ref(false)
 const formRef = ref(null)
+
+const reviewDrawerVisible = ref(false)
+const reviewLoading = ref(false)
+const reviews = ref([])
 
 const form = reactive({
   id: null,
@@ -282,9 +304,40 @@ const handleSubmit = async () => {
     }
   })
 }
+
+const handleReview = async (row) => {
+    reviewDrawerVisible.value = true
+    reviewLoading.value = true
+    reviews.value = []
+    try {
+        const res = await request.get('/comment/list/goods', { params: { goodsId: row.id } })
+        if(res.code === 1) {
+            reviews.value = res.data || []
+        }
+    } catch(e) { console.error(e) }
+    reviewLoading.value = false
+}
+
+const maskPhone = (phone) => {
+    if(!phone) return '匿名'
+    try {
+        return phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')
+    } catch(e) { return phone }
+}
+
+const formatTime = (t) => {
+    if(!t) return ''
+    return t.replace('T', ' ').substring(0, 19)
+}
 </script>
 
 <style scoped>
+.review-item { padding: 12px; border-bottom: 1px solid #f0f0f0; }
+.r-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.r-user { font-size: 14px; font-weight: bold; color: #666; }
+.r-content { font-size: 14px; color: #333; line-height: 1.5; margin-bottom: 6px; }
+.r-time { font-size: 12px; color: #999; text-align: right; }
+
 .goods-container {
   padding: 10px;
 }

@@ -7,6 +7,8 @@ import java.util.List;
 
 @Mapper
 public interface OrderItemMapper {
+    OrderItem selectById(@Param("id") Long id);
+
     int batchSave(@Param("items") List<OrderItem> items);
     List<OrderItem> selectByOrderId(@Param("orderId") Long orderId);
     
