@@ -43,7 +43,7 @@
           <div 
             v-for="goods in filteredGoodsList" 
             :key="goods.id" 
-            class="goods-card animate__animated animate__fadeIn"
+            class="product-box animate__animated animate__fadeIn"
           >
             <div class="goods-img-box">
               <img 
@@ -58,14 +58,15 @@
                 <span class="sales">月销 99+</span>
               </div>
               <div class="goods-bottom">
-                <div class="price-bubble">
+                <div class="price-text">
                   <span class="symbol">¥</span>
                   <span class="num">{{ goods.price }}</span>
                 </div>
-                <button class="add-btn" @click.stop="addToCart(goods)">
-                  <el-icon><Plus /></el-icon>
-                </button>
               </div>
+            </div>
+            <!-- 悬浮加购按钮 -->
+            <div class="add-btn" @click.stop="addToCart(goods)">
+              <el-icon><Plus /></el-icon>
             </div>
           </div>
         </div>
@@ -172,10 +173,11 @@ const addToCart = async (goods) => {
 
 /* Sidebar */
 .category-sidebar {
-  width: 86px;
-  background: #f8f8f8;
+  width: 100px;
+  background: #f7f8fa;
   overflow-y: auto;
   padding-bottom: 20px;
+  border-right: 1px solid rgba(0,0,0,0.05);
 }
 
 .category-item {
@@ -189,8 +191,8 @@ const addToCart = async (goods) => {
 
 .category-item.active {
   background: white;
-  color: var(--color-primary);
-  font-weight: 600;
+  color: #ff6b6b;
+  font-weight: 700;
 }
 
 .category-item.active::before {
@@ -199,10 +201,10 @@ const addToCart = async (goods) => {
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  height: 16px;
+  height: 20px;
   width: 4px;
-  background: var(--color-primary);
-  border-radius: 0 2px 2px 0;
+  background: #ff6b6b;
+  border-radius: 0 4px 4px 0;
 }
 
 /* Goods Grid */
@@ -214,28 +216,33 @@ const addToCart = async (goods) => {
 }
 
 .goods-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
-.goods-card {
-  background: white;
-  border-radius: var(--card-radius);
-  box-shadow: var(--shadow-card);
-  overflow: hidden;
-  transition: transform 0.2s;
+.product-box {
+  background: #fff;
+  border-radius: 16px;
+  padding: 12px;
+  margin-bottom: 4px;
   display: flex;
-  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  transition: all 0.2s;
+  position: relative; /* 为加号按钮定位 */
 }
 
-.goods-card:active {
+.product-box:active {
   transform: scale(0.98);
 }
 
 .goods-img-box {
-  width: 100%;
-  aspect-ratio: 1;
+  width: 90px;
+  height: 90px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  overflow: hidden;
   background: #f9f9f9;
 }
 
@@ -246,63 +253,68 @@ const addToCart = async (goods) => {
 }
 
 .goods-info {
-  padding: 10px;
   flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  padding: 2px 0;
 }
 
 .goods-name {
-  font-size: 14px;
-  margin: 0 0 4px;
+  font-size: 15px;
+  margin: 0;
   line-height: 1.4;
-  height: 40px; /* 2 lines */
-  overflow: hidden;
+  font-weight: bold;
+  color: #333;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .goods-meta {
-  font-size: 10px;
+  font-size: 11px;
   color: #999;
-  margin-bottom: 8px;
 }
 
 .goods-bottom {
-  margin-top: auto;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
 }
 
-.price-bubble {
-  background: #fff0f0;
-  color: var(--color-primary);
-  padding: 2px 8px;
-  border-radius: 12px;
+.price-text {
+  color: #ff6b6b;
   font-weight: bold;
+  line-height: 1;
 }
 
 .symbol {
-  font-size: 10px;
+  font-size: 12px;
   margin-right: 1px;
 }
 
 .num {
-  font-size: 16px;
+  font-size: 18px;
 }
 
+/* 修复加号按钮 */
 .add-btn {
-  width: 28px;
-  height: 28px;
+  background: #ff6b6b; /* 醒目红 */
+  color: #fff; /* 纯白图标 */
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: var(--color-primary);
-  border: none;
-  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  box-shadow: 0 4px 8px rgba(255, 107, 107, 0.3);
+  transition: transform 0.1s;
+}
+
+.add-btn:active {
+  transform: scale(0.9);
 }
 </style>
