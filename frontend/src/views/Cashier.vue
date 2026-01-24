@@ -96,21 +96,37 @@ const formatTime = (seconds) => {
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
 }
 
-const handlePay = () => {
+const handlePay = async () => {
   paying.value = true
-  // 全屏 Loading 模拟支付过程
   const loading = ElLoading.service({
     lock: true,
     text: '正在连接支付网关...',
     background: 'rgba(0, 0, 0, 0.7)',
   })
   
-  setTimeout(() => {
+  try {
+    // 模拟网络延迟
+    await new Promise(r => setTimeout(r, 1000))
+
+    // 调用后端支付接口
+    const res = await request.post('/order/pay', {
+      orderNo: orderNo,
+      payMethod: payMethod.value
+    })
+    
+    if (res.code === 1) {
+      ElMessage.success('支付成功！')
+      router.push('/order') // 跳转回订单列表，此时状态应已更新
+    } else {
+      ElMessage.error(res.msg || res.message || '支付失败')
+    }
+  } catch (error) {
+    console.error(error)
+    ElMessage.error('支付请求异常')
+  } finally {
     loading.close()
     paying.value = false
-    ElMessage.success('支付成功！')
-    router.push('/order') // 跳转订单列表
-  }, 1500)
+  }
 }
 
 onMounted(() => {

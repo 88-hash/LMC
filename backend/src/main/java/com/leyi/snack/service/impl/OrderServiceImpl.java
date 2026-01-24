@@ -177,4 +177,14 @@ public class OrderServiceImpl implements OrderService {
     public Order getByOrderNo(String orderNo) {
         return orderMapper.selectByOrderNo(orderNo);
     }
+
+    @Override
+    public void pay(String orderNo, String payMethod, Long userId) {
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if (order == null) throw new RuntimeException("订单不存在");
+        if (!order.getUserId().equals(userId)) throw new RuntimeException("无权操作");
+        
+        // 统一：支付成功→状态为 0 (待核销)
+        orderMapper.updateStatus(order.getId(), 0);
+    }
 }

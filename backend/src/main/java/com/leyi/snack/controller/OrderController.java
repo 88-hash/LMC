@@ -39,6 +39,19 @@ public class OrderController {
         }
     }
 
+    @PostMapping("/pay")
+    public Result<String> pay(@RequestBody Map<String, String> params) {
+        Long userId = (Long) request.getAttribute("userId");
+        String orderNo = params.get("orderNo");
+        String payMethod = params.get("payMethod");
+        try {
+            orderService.pay(orderNo, payMethod, userId);
+            return Result.success("支付成功");
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
     @GetMapping("/list")
     public Result<List<Order>> list() {
         Long userId = (Long) request.getAttribute("userId");

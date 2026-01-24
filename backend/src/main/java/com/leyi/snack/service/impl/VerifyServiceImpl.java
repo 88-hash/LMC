@@ -48,7 +48,8 @@ public class VerifyServiceImpl implements VerifyService {
         }
 
         // 2. 检查状态
-        if (order.getStatus() != 0) { // 0:待取货
+        // 统一状态：仅允许 0(待核销) 进入核销
+        if (order.getStatus() != 0) { 
             throw new RuntimeException("该订单状态不可核销 (状态码: " + order.getStatus() + ")");
         }
 

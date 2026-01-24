@@ -1,72 +1,72 @@
 <template>
-  <div class="home-container">
-    <!-- 热门轮播图 -->
-    <div class="banner-section">
-      <el-carousel :interval="4000" type="card" height="150px" indicator-position="none">
-        <el-carousel-item v-for="item in banners" :key="item.id">
-          <div class="banner-item" :style="{ backgroundColor: item.color }">
-            <span class="banner-text">{{ item.text }}</span>
-            <span class="banner-emoji">{{ item.emoji }}</span>
-          </div>
-        </el-carousel-item>
-      </el-carousel>
+  <div class="mobile-shop-container">
+    <div class="shop-header">
+      <div class="header-content">
+        <div class="brand-title">🍬 乐逸零食</div>
+        <div class="brand-subtitle">Leyi Snack Shop</div>
+      </div>
+      <div class="search-bar-box">
+        <el-input prefix-icon="Search" placeholder="搜索美味零食..." class="round-search" />
+      </div>
     </div>
 
-    <div class="content-wrapper">
-      <!-- 左侧分类栏 -->
+    <div class="shop-body">
       <aside class="category-sidebar">
         <div 
-          class="category-item" 
+          class="sidebar-item" 
           :class="{ active: currentCategoryId === 0 }"
           @click="currentCategoryId = 0"
         >
-          <span class="category-name">全部</span>
+          <span class="item-text">全部</span>
         </div>
         <div 
           v-for="cate in categoryList" 
           :key="cate.id"
-          class="category-item"
+          class="sidebar-item"
           :class="{ active: currentCategoryId === cate.id }"
           @click="currentCategoryId = cate.id"
         >
-          <span class="category-name">{{ cate.name }}</span>
+          <span class="item-text">{{ cate.name }}</span>
         </div>
       </aside>
 
-      <!-- 右侧商品网格 -->
-      <main class="goods-grid">
+      <main class="product-area">
+        <div class="banner-box">
+          <el-carousel :interval="4000" height="160px" arrow="never" indicator-position="none">
+            <el-carousel-item v-for="item in banners" :key="item.id">
+              <div class="banner-item" :style="{ backgroundColor: item.color }">
+                <span class="banner-text">{{ item.text }}</span>
+                <span class="banner-emoji">{{ item.emoji }}</span>
+              </div>
+            </el-carousel-item>
+          </el-carousel>
+        </div>
+        
         <div v-if="filteredGoodsList.length === 0" class="empty-state">
           <el-empty description="暂无相关商品" />
         </div>
-        
+
         <div class="goods-list">
           <div 
             v-for="goods in filteredGoodsList" 
             :key="goods.id" 
-            class="product-box animate__animated animate__fadeIn"
+            class="goods-card animate__animated animate__fadeIn"
           >
-            <div class="goods-img-box">
+            <div class="img-box">
               <img 
                 :src="goods.imageUrl || 'https://placehold.co/200x200/f5f5f5/ccc?text=Snack'" 
-                class="goods-img" 
-                alt="goods"
+                loading="lazy" 
               />
             </div>
-            <div class="goods-info">
+            <div class="info-box">
               <h3 class="goods-name">{{ goods.name }}</h3>
-              <div class="goods-meta">
-                <span class="sales">月销 99+</span>
-              </div>
+              <div class="goods-meta">销量 99+</div>
               <div class="goods-bottom">
-                <div class="price-text">
-                  <span class="symbol">¥</span>
-                  <span class="num">{{ goods.price }}</span>
+                <span class="price">¥<span class="price-num">{{ goods.price }}</span></span>
+                <div class="add-btn" @click.stop="addToCart(goods)">
+                  <el-icon><Plus /></el-icon>
                 </div>
               </div>
-            </div>
-            <!-- 悬浮加购按钮 -->
-            <div class="add-btn" @click.stop="addToCart(goods)">
-              <el-icon><Plus /></el-icon>
             </div>
           </div>
         </div>
@@ -119,40 +119,160 @@ const fetchGoods = async () => {
 }
 
 const addToCart = async (goods) => {
+  console.log('addToCart:', goods)
   try {
-    const res = await request.post('/cart/add', { goodsId: goods.id, quantity: 1 })
+    const gid = Number(goods?.id)
+    if (!gid || Number.isNaN(gid)) {
+      ElMessage.error(`商品ID缺失：${goods?.name || ''}`)
+      return
+    }
+    const res = await request.post('/cart/add', { goodsId: gid, quantity: 1 })
+    console.log('addToCart res:', res)
     if (res.code === 1) {
       ElMessage.success('已加入购物车')
       cartStore.refresh()
+    } else {
+      ElMessage.error(res.message || '加购失败，请稍后重试')
     }
-  } catch (e) { console.error(e) }
+  } catch (e) { 
+    console.error(e)
+    ElMessage.error('网络连接异常，请检查网络')
+  }
 }
 </script>
 
 <style scoped>
-.home-container {
-  height: 100%;
+/* 1. 容器与背景 (Global) */
+.mobile-shop-container {
+  height: 100vh; /* 视口高度 */
   display: flex;
   flex-direction: column;
+  background-color: #f5f6fa; /* 防止大白屏 */
 }
 
-.banner-section {
-  padding: 10px 16px;
-  background: white;
-  margin-bottom: 10px;
+.shop-body {
+  flex: 1; /* 占满剩余空间 */
+  display: flex;
+  overflow: hidden; /* 关键：防止整体滚动 */
+  position: relative;
+}
+
+/* 2. 顶部品牌栏 (.shop-header) */
+.shop-header {
+  background: linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%);
+  height: 130px;
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-shrink: 0;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.15);
+}
+
+.header-content {
+  margin-top: 10px;
+}
+
+.brand-title {
+  font-size: 26px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 4px;
+}
+
+.brand-subtitle {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* 搜索框优化 */
+.search-bar-box :deep(.el-input__wrapper) {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border: none;
+}
+
+.search-bar-box :deep(.el-input__inner) {
+  color: #333;
+}
+
+/* 3. 左侧导航 (.category-sidebar) */
+.category-sidebar {
+  width: 100px;
+  background-color: #f7f8fa;
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
+
+/* 隐藏滚动条 */
+.category-sidebar::-webkit-scrollbar,
+.product-area::-webkit-scrollbar {
+  display: none;
+}
+
+.sidebar-item {
+  padding: 16px 10px;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  position: relative;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.sidebar-item.active {
+  background-color: #ffffff;
+  color: #333;
+  font-weight: 800;
+  font-size: 16px;
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+}
+
+.sidebar-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 20px;
+  width: 4px;
+  background-color: #ff6b6b;
+  border-radius: 0 4px 4px 0;
+}
+
+/* 4. 右侧商品区 (.product-area) */
+.product-area {
+  flex: 1;
+  background-color: #ffffff;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+/* 轮播图美化 */
+.banner-box {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
 }
 
 .banner-item {
   height: 100%;
-  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-size: 24px;
   font-weight: bold;
-  position: relative;
-  overflow: hidden;
 }
 
 .banner-emoji {
@@ -161,111 +281,57 @@ const addToCart = async (goods) => {
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
 }
 
-.content-wrapper {
-  flex: 1;
-  display: flex;
-  overflow: hidden;
-  background: white;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
-  box-shadow: 0 -4px 16px rgba(0,0,0,0.05);
-}
-
-/* Sidebar */
-.category-sidebar {
-  width: 100px;
-  background: #f7f8fa;
-  overflow-y: auto;
-  padding-bottom: 20px;
-  border-right: 1px solid rgba(0,0,0,0.05);
-}
-
-.category-item {
-  padding: 16px 8px;
-  text-align: center;
-  font-size: 13px;
-  color: #666;
-  position: relative;
-  transition: all 0.3s;
-}
-
-.category-item.active {
-  background: white;
-  color: #ff6b6b;
-  font-weight: 700;
-}
-
-.category-item.active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  height: 20px;
-  width: 4px;
-  background: #ff6b6b;
-  border-radius: 0 4px 4px 0;
-}
-
-/* Goods Grid */
-.goods-grid {
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px;
-  background: white;
-}
-
+/* 商品列表 */
 .goods-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  padding-bottom: 20px;
 }
 
-.product-box {
+.goods-card {
   background: #fff;
   border-radius: 16px;
   padding: 12px;
-  margin-bottom: 4px;
   display: flex;
   gap: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-  transition: all 0.2s;
-  position: relative; /* 为加号按钮定位 */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  transition: transform 0.1s;
 }
 
-.product-box:active {
+.goods-card:active {
   transform: scale(0.98);
 }
 
-.goods-img-box {
-  width: 90px;
-  height: 90px;
+.img-box {
+  width: 100px;
+  height: 100px;
   flex-shrink: 0;
   border-radius: 12px;
   overflow: hidden;
   background: #f9f9f9;
 }
 
-.goods-img {
+.img-box img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.goods-info {
+.info-box {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 2px 0;
+  padding: 4px 0;
 }
 
 .goods-name {
   font-size: 15px;
-  margin: 0;
-  line-height: 1.4;
   font-weight: bold;
   color: #333;
+  margin: 0;
+  line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -279,42 +345,41 @@ const addToCart = async (goods) => {
 
 .goods-bottom {
   display: flex;
+  justify-content: space-between;
   align-items: flex-end;
 }
 
-.price-text {
+.price {
   color: #ff6b6b;
-  font-weight: bold;
-  line-height: 1;
-}
-
-.symbol {
   font-size: 12px;
-  margin-right: 1px;
+  font-weight: bold;
 }
 
-.num {
-  font-size: 18px;
+.price-num {
+  font-size: 20px;
+  margin-left: 2px;
 }
 
-/* 修复加号按钮 */
 .add-btn {
-  background: #ff6b6b; /* 醒目红 */
-  color: #fff; /* 纯白图标 */
   width: 32px;
   height: 32px;
   border-radius: 50%;
+  background: #ffcdb2; /* 柔和的主色调 */
+  background: linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
   box-shadow: 0 4px 8px rgba(255, 107, 107, 0.3);
-  transition: transform 0.1s;
+  cursor: pointer;
 }
 
 .add-btn:active {
   transform: scale(0.9);
+}
+
+.empty-state {
+  padding: 40px;
+  text-align: center;
 }
 </style>

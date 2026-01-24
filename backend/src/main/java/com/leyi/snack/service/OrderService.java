@@ -33,4 +33,9 @@ public interface OrderService {
      * 根据订单号查询 (收银台用)
      */
     Order getByOrderNo(String orderNo);
+
+    /**
+     * 支付订单
+     */
+    void pay(String orderNo, String payMethod, Long userId);
 }
