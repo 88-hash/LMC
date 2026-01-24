@@ -12,4 +12,9 @@ public interface UserService {
      * 用户登录（手机号+验证码）
      */
     AdminLoginVO login(String phone, String code);
+
+    /**
+     * 更新用户信息
+     */
+    AdminLoginVO updateProfile(Long userId, String name, String avatar);
 }

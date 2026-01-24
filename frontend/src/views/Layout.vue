@@ -33,12 +33,24 @@
             <span class="action-text">我的订单</span>
           </div>
 
-          <el-dropdown trigger="click" @command="handleCommand">
+          <div class="action-item" @click="goProfile">
+            <el-icon :size="24"><User /></el-icon>
+            <span class="action-text">个人中心</span>
+          </div>
+
+          <!-- 未登录状态 -->
+          <div v-if="!userInfo.token" class="login-btn" @click="goLogin">
+            登录/注册
+          </div>
+
+          <!-- 已登录状态：显示头像下拉 -->
+          <el-dropdown v-else trigger="click" @command="handleCommand">
             <div class="user-avatar">
-              <el-avatar :size="36" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
+              <el-avatar :size="36" :src="userInfo.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'" />
             </div>
             <template #dropdown>
               <el-dropdown-menu>
+                <el-dropdown-item command="profile">个人中心</el-dropdown-item>
                 <el-dropdown-item command="logout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -61,26 +73,33 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, ShoppingCart, List } from '@element-plus/icons-vue'
+import { Search, ShoppingCart, List, User } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useCartStore } from '../stores/cart'
+import { useUserStore } from '../stores/user'
 
 const router = useRouter()
 const searchKeyword = ref('')
 const cartStore = useCartStore()
+const userStore = useUserStore()
+const userInfo = userStore.userInfo
 const cartCount = ref(0)
 
 const goCart = () => { router.push('/cart') }
 const goOrders = () => { router.push('/order') }
+const goProfile = () => { router.push('/profile') }
+const goLogin = () => { router.push('/login') }
 
 const handleCommand = (command) => {
-  if (command === 'logout') {
+  if (command === 'profile') {
+    router.push('/profile')
+  } else if (command === 'logout') {
     ElMessageBox.confirm('确定要退出登录吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
     }).then(() => {
-      localStorage.clear()
+      userStore.logout()
       router.push('/login')
       ElMessage.success('已退出登录')
     })
@@ -182,6 +201,18 @@ onMounted(async () => {
 .user-avatar {
   cursor: pointer;
   margin-left: 10px;
+}
+
+.login-btn {
+  font-size: 14px;
+  color: #409eff;
+  cursor: pointer;
+  font-weight: 500;
+  margin-left: 10px;
+}
+
+.login-btn:hover {
+  text-decoration: underline;
 }
 
 .app-main {

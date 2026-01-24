@@ -4,6 +4,9 @@
       <div class="avatar-area">
         <div class="avatar" :style="{ backgroundImage: userInfo.avatar ? `url(${userInfo.avatar})` : '' }">
           {{ !userInfo.avatar ? (userInfo.name?.charAt(0) || 'U') : '' }}
+          <div class="edit-btn" @click="handleEditProfile">
+            <el-icon><Edit /></el-icon>
+          </div>
         </div>
       </div>
       <h2 class="username">{{ userInfo.name || '未登录' }}</h2>
@@ -31,27 +34,149 @@
         退出登录
       </el-button>
     </div>
+
+    <!-- 编辑资料弹窗 -->
+    <el-dialog
+      v-model="dialogVisible"
+      title="编辑资料"
+      width="400px"
+      destroy-on-close
+    >
+      <el-form label-width="60px">
+        <el-form-item label="昵称">
+          <el-input v-model="form.name" placeholder="请输入昵称" />
+        </el-form-item>
+        <el-form-item label="头像">
+          <div class="avatar-grid">
+            <img 
+                v-for="(url, idx) in presetAvatars" 
+                :key="idx"
+                :src="url"
+                class="avatar-option"
+                :class="{ active: form.avatar === url }"
+                @click="selectAvatar(url)"
+            />
+          </div>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleSave" :loading="loading">保存</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { List, ShoppingCart, ArrowRight, ChatLineSquare } from '@element-plus/icons-vue'
+import { List, ShoppingCart, ArrowRight, ChatLineSquare, Edit } from '@element-plus/icons-vue'
+import { useUserStore } from '../stores/user'
+import request from '../utils/request'
 
 const router = useRouter()
-const userInfo = ref(JSON.parse(localStorage.getItem('userInfo') || '{}'))
+const userStore = useUserStore()
+const userInfo = userStore.userInfo
+
+const dialogVisible = ref(false)
+const loading = ref(false)
+const form = reactive({
+    name: '',
+    avatar: ''
+})
+
+const presetAvatars = [
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Felix',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Bella',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Coco',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Max',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Luna',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Oliver'
+]
+
+const handleEditProfile = () => {
+    form.name = userInfo.value.name
+    form.avatar = userInfo.value.avatar
+    dialogVisible.value = true
+}
+
+const selectAvatar = (url) => {
+    form.avatar = url
+}
+
+const handleSave = async () => {
+    if (!form.name) {
+        ElMessage.warning('请输入昵称')
+        return
+    }
+    loading.value = true
+    try {
+        const res = await request.post('/user/update', form)
+        if (res.code === 1) {
+            ElMessage.success('修改成功')
+            // Update Pinia store
+            userStore.setUser({
+                ...userInfo.value,
+                name: res.data.name,
+                avatar: res.data.avatar
+            })
+            dialogVisible.value = false
+        } else {
+            ElMessage.error(res.message)
+        }
+    } catch(e) {
+        console.error(e)
+    } finally {
+        loading.value = false
+    }
+}
 
 const handleLogout = () => {
-  localStorage.removeItem('token')
-  localStorage.removeItem('userInfo')
+  userStore.logout()
   ElMessage.success('已退出登录')
   router.push('/login')
 }
 </script>
 
 <style scoped>
+.edit-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: #409eff;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.avatar-option {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.avatar-option:hover { transform: scale(1.1); }
+.avatar-option.active { border-color: #409eff; box-shadow: 0 0 10px rgba(64,158,255,0.3); }
+
 .profile-container {
   min-height: 100vh;
   background: #f8f9fa;

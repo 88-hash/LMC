@@ -36,6 +36,32 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public AdminLoginVO updateProfile(Long userId, String name, String avatar) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        if (name != null && !name.isEmpty()) {
+            user.setName(name);
+        }
+        if (avatar != null && !avatar.isEmpty()) {
+            user.setAvatar(avatar);
+        }
+
+        userMapper.update(user);
+
+        // 返回最新的用户信息，方便前端更新
+        return AdminLoginVO.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .phone(user.getPhone())
+                .avatar(user.getAvatar())
+                .token(null) // 更新资料不需要返回 token
+                .build();
+    }
+
+    @Override
     public AdminLoginVO login(String phone, String code) {
         // 0. 校验验证码
         String cachedCode = codeCache.get(phone);

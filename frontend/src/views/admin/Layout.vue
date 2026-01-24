@@ -33,6 +33,10 @@
           <el-icon><Ticket /></el-icon>
           <span>核销中心</span>
         </el-menu-item>
+        <el-menu-item index="/admin/manager">
+          <el-icon><UserFilled /></el-icon>
+          <span>店员管理</span>
+        </el-menu-item>
       </el-menu>
     </aside>
 
@@ -49,7 +53,12 @@
           <el-dropdown trigger="click" @command="handleCommand">
             <span class="avatar-wrapper">
               <el-avatar :size="32" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
-              <span class="username">{{ adminName }}</span>
+              <div class="user-info-box">
+                <span class="username">{{ adminName }}</span>
+                <el-tag size="small" effect="plain" round :type="roleName === '店长' ? 'danger' : 'info'" class="role-tag">
+                  {{ roleName }}
+                </el-tag>
+              </div>
               <el-icon class="el-icon--right"><arrow-down /></el-icon>
             </span>
             <template #dropdown>
@@ -75,7 +84,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Odometer, Goods, Files, List, Ticket, ArrowDown } from '@element-plus/icons-vue'
+import { Odometer, Goods, Files, List, Ticket, ArrowDown, UserFilled } from '@element-plus/icons-vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
 
 const route = useRoute()
@@ -86,6 +95,12 @@ const currentRouteName = computed(() => route.meta.title || '当前页面')
 
 const adminInfo = JSON.parse(localStorage.getItem('adminInfo') || '{}')
 const adminName = ref(adminInfo.name || '超级店长')
+
+const roleName = computed(() => {
+  const role = adminInfo.role
+  if (role === 'manager' || role === 'admin') return '店长'
+  return '店员'
+})
 
 const handleCommand = (command) => {
   if (command === 'logout') {
@@ -227,5 +242,19 @@ const handleCommand = (command) => {
 .fade-transform-leave-to {
   opacity: 0;
   transform: scale(1.05);
+}
+
+.user-info-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-left: 8px;
+  line-height: 1.2;
+}
+
+.role-tag {
+  transform: scale(0.85);
+  transform-origin: left center;
+  margin-top: 2px;
 }
 </style>
