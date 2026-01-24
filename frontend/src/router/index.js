@@ -40,13 +40,20 @@ const routes = [
       { path: 'verify', name: 'AdminVerify', component: () => import('../views/admin/Verify.vue'), meta: { title: '核销中心', requiresAuth: true } },
       { path: 'manager', name: 'AdminManager', component: () => import('../views/admin/AdminManager.vue'), meta: { title: '店员管理', requiresAuth: true } }
     ]
-  }
+  },
+  
+  // 404 路由 (必须放在最后)
+  { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('../views/NotFound.vue') }
 ]
 
 const router = createRouter({ history: createWebHistory(), routes })
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
+  // 动态设置标题
+  const title = to.meta.title || '乐逸零食 - 超好吃的零食铺';
+  document.title = `${title} | 乐逸零食`;
+
   // 后台鉴权
   if (to.path.startsWith('/admin')) {
     if (to.path === '/admin/login') return next()
