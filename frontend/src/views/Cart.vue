@@ -100,22 +100,168 @@ onMounted(load)
 </script>
 
 <style scoped>
-.cart-page { padding-bottom: 90px }
-.list-card { background: #fff; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.06); padding: 12px }
-.cart-list { display: flex; flex-direction: column; gap: 12px }
-.cart-item { display: flex; gap: 14px; padding: 12px; border-radius: 12px; background: #fafafa; align-items: center; transition: all .25s }
-.cart-item:hover { box-shadow: 0 4px 14px rgba(0,0,0,.08); transform: translateY(-2px) }
-.thumb { width: 90px; height: 90px; border-radius: 10px; object-fit: cover; background:#f2f2f2 }
-.info { flex: 1; display: flex; flex-direction: column; gap: 8px }
-.title { font-weight: 600; color: #333 }
-.meta { color: #999 }
-.price { color: #ff6b6b; font-weight: 700 }
-.actions { display: flex; align-items: center; gap: 10px }
-.checkout-bar { position: fixed; left: 0; right: 0; bottom: 0; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background: rgba(255,255,255,.7); backdrop-filter: saturate(180%) blur(16px); border-top: 1px solid rgba(255,255,255,.6) }
-.summary { display: flex; align-items: baseline; gap: 16px; color: #666 }
-.summary .sum { font-size: 16px }
-.checkout-btn { border-radius: 999px; padding: 0 28px }
+.cart-page {
+  padding-bottom: 120px; /* Space for checkout bar + tab bar */
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top: 16px;
+}
+
+.list-card {
+  /* Remove container card style, use transparent container */
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.cart-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cart-item {
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  border-radius: var(--card-radius);
+  background: white;
+  align-items: center;
+  transition: all .25s;
+  box-shadow: var(--shadow-card);
+}
+
+.cart-item:active {
+  transform: scale(0.98);
+}
+
+.thumb {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #f2f2f2;
+}
+
+.info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 80px;
+}
+
+.title {
+  font-weight: 600;
+  color: #333;
+  font-size: 15px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.price {
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Custom quantity control */
+.qty-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #666;
+}
+
+.qty-btn:active {
+  background: #f5f5f5;
+}
+
+.qty-num {
+  font-size: 14px;
+  min-width: 20px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.del-btn {
+  margin-left: auto;
+  color: #ff4d4f;
+  font-size: 12px;
+  padding: 4px 8px;
+  background: #fff0f0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.checkout-bar {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(60px + env(safe-area-inset-bottom)); /* Above TabBar */
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 30px;
+  box-shadow: var(--shadow-float);
+  z-index: 900;
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.count-text {
+  font-size: 12px;
+  color: #999;
+}
+
+.sum {
+  font-size: 14px;
+  color: #333;
+}
+
+.sum b {
+  font-size: 18px;
+  color: var(--color-primary);
+}
+
+.checkout-btn {
+  border-radius: 20px;
+  padding: 0 24px;
+  background: var(--color-primary);
+  border: none;
+  font-weight: 600;
+  height: 40px;
+}
+
 .fade-leave-active, .fade-enter-active { transition: all .25s }
-.fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(6px) }
+.fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(10px) }
 </style>
 

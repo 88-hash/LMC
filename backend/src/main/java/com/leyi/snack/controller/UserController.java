@@ -46,9 +46,10 @@ public class UserController {
     @PostMapping("/update")
     public Result<AdminLoginVO> update(@RequestBody Map<String, String> params, HttpServletRequest request) {
         try {
-            String token = request.getHeader("token");
-            Claims claims = jwtUtils.parseToken(token);
-            Long userId = Long.valueOf(claims.get("id").toString());
+            Long userId = (Long) request.getAttribute("userId");
+            if (userId == null) {
+                return Result.error("未登录或会话已过期");
+            }
 
             String name = params.get("name");
             String avatar = params.get("avatar");
@@ -56,6 +57,7 @@ public class UserController {
             AdminLoginVO vo = userService.updateProfile(userId, name, avatar);
             return Result.success(vo);
         } catch (Exception e) {
+            e.printStackTrace();
             return Result.error(e.getMessage());
         }
     }

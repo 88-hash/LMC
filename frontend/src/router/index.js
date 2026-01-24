@@ -10,14 +10,14 @@ const routes = [
     name: 'Layout',
     component: () => import('../views/Layout.vue'),
     children: [
-      { path: '', name: 'Home', component: () => import('../views/Home.vue') },
-      { path: 'cart', name: 'Cart', component: () => import('../views/Cart.vue'), meta: { requiresAuth: true } },
-      { path: 'confirm', name: 'OrderConfirm', component: () => import('../views/OrderConfirm.vue'), meta: { requiresAuth: true } },
-      { path: 'cashier', name: 'Cashier', component: () => import('../views/Cashier.vue'), meta: { requiresAuth: true } },
-      { path: 'order', name: 'Order', component: () => import('../views/Order.vue'), meta: { requiresAuth: true } },
-      { path: 'comment/add/:orderId', name: 'CommentAdd', component: () => import('../views/CommentAdd.vue'), meta: { requiresAuth: true } },
-      { path: 'my-comments', name: 'MyComments', component: () => import('../views/MyComments.vue'), meta: { requiresAuth: true } },
-      { path: 'profile', name: 'Profile', component: () => import('../views/Profile.vue'), meta: { requiresAuth: true } },
+      { path: '', name: 'Home', component: () => import('../views/Home.vue'), meta: { title: '乐逸零食' } },
+      { path: 'cart', name: 'Cart', component: () => import('../views/Cart.vue'), meta: { title: '购物车', requiresAuth: true } },
+      { path: 'confirm', name: 'OrderConfirm', component: () => import('../views/OrderConfirm.vue'), meta: { title: '确认订单', requiresAuth: true } },
+      { path: 'cashier', name: 'Cashier', component: () => import('../views/Cashier.vue'), meta: { title: '收银台', requiresAuth: true } },
+      { path: 'order', name: 'Order', component: () => import('../views/Order.vue'), meta: { title: '我的订单', requiresAuth: true } },
+      { path: 'comment/add/:orderId', name: 'CommentAdd', component: () => import('../views/CommentAdd.vue'), meta: { title: '发表评价', requiresAuth: true } },
+      { path: 'my-comments', name: 'MyComments', component: () => import('../views/MyComments.vue'), meta: { title: '我的评价', requiresAuth: true } },
+      { path: 'profile', name: 'Profile', component: () => import('../views/Profile.vue'), meta: { title: '个人中心', requiresAuth: true } },
       { path: 'category', name: 'Category', component: () => import('../views/admin/Category.vue') },
       { path: 'goods', name: 'Goods', component: () => import('../views/admin/Goods.vue') }
     ]

@@ -1,234 +1,71 @@
 <template>
   <div class="app-layout">
-    <!-- 顶部导航 -->
-    <header class="app-header">
-      <div class="header-inner">
-        <!-- Logo -->
-        <div class="logo">
-          <span class="emoji">🍪</span>
-          <h1 class="title">乐逸零食</h1>
-        </div>
-
-        <!-- 搜索框 -->
-        <div class="search-bar">
-          <el-input
-            v-model="searchKeyword"
-            placeholder="搜索您想吃的零食..."
-            class="search-input"
-            :prefix-icon="Search"
-          />
-        </div>
-
-        <!-- 右侧操作区 -->
-        <div class="actions">
-          <div class="action-item" @click="goCart">
-            <el-badge :value="cartCount" class="cart-badge" :hidden="cartCount===0">
-              <el-icon :size="24"><ShoppingCart /></el-icon>
-            </el-badge>
-            <span class="action-text">购物车</span>
-          </div>
-
-          <div class="action-item" @click="goOrders">
-            <el-icon :size="24"><List /></el-icon>
-            <span class="action-text">我的订单</span>
-          </div>
-
-          <div class="action-item" @click="goProfile">
-            <el-icon :size="24"><User /></el-icon>
-            <span class="action-text">个人中心</span>
-          </div>
-
-          <!-- 未登录状态 -->
-          <div v-if="!userInfo.token" class="login-btn" @click="goLogin">
-            登录/注册
-          </div>
-
-          <!-- 已登录状态：显示头像下拉 -->
-          <el-dropdown v-else trigger="click" @command="handleCommand">
-            <div class="user-avatar">
-              <el-avatar :size="36" :src="userInfo.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'" />
-            </div>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item command="profile">个人中心</el-dropdown-item>
-                <el-dropdown-item command="logout">退出登录</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </div>
-      </div>
-    </header>
-
-    <!-- 主体内容 -->
+    <NavBar />
+    
     <main class="app-main">
       <router-view v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
-          <component :is="Component" />
+        <transition name="slide-fade" mode="out-in">
+          <component :is="Component" :key="$route.path" />
         </transition>
       </router-view>
     </main>
+
+    <TabBar v-if="showTabBar" />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { Search, ShoppingCart, List, User } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import NavBar from '../components/NavBar.vue'
+import TabBar from '../components/TabBar.vue'
 import { useCartStore } from '../stores/cart'
-import { useUserStore } from '../stores/user'
 
-const router = useRouter()
-const searchKeyword = ref('')
+const route = useRoute()
 const cartStore = useCartStore()
-const userStore = useUserStore()
-const userInfo = userStore.userInfo
-const cartCount = ref(0)
 
-const goCart = () => { router.push('/cart') }
-const goOrders = () => { router.push('/order') }
-const goProfile = () => { router.push('/profile') }
-const goLogin = () => { router.push('/login') }
+// 仅在主要页面显示 TabBar，或者一直显示？
+// 通常二级页面（如订单详情）不显示 TabBar。
+// 这里简单逻辑：一直显示，或者根据 meta 配置。
+// 让我们根据路由名判断，只在 Tab 页显示 TabBar，避免遮挡底部操作按钮（如“立即支付”）
+const showTabBar = computed(() => {
+  return ['Home', 'Cart', 'Order', 'Profile'].includes(route.name)
+})
 
-const handleCommand = (command) => {
-  if (command === 'profile') {
-    router.push('/profile')
-  } else if (command === 'logout') {
-    ElMessageBox.confirm('确定要退出登录吗？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }).then(() => {
-      userStore.logout()
-      router.push('/login')
-      ElMessage.success('已退出登录')
-    })
-  }
-}
-
-onMounted(async () => {
-  await cartStore.refresh()
-  cartCount.value = cartStore.count
+onMounted(() => {
+  cartStore.refresh()
 })
 </script>
 
 <style scoped>
 .app-layout {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: #f5f7fa;
-}
-
-.app-header {
-  height: 64px;
-  background: white;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.header-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.emoji {
-  font-size: 28px;
-  margin-right: 8px;
-}
-
-.title {
-  font-size: 20px;
-  font-weight: bold;
-  color: #2c3e50;
-  margin: 0;
-}
-
-.search-bar {
-  flex: 1;
-  max-width: 500px;
-  margin: 0 40px;
-}
-
-.search-input :deep(.el-input__wrapper) {
-  border-radius: 20px;
-  background-color: #f5f7fa;
-  box-shadow: none;
-}
-
-.search-input :deep(.el-input__wrapper.is-focus) {
-  background-color: white;
-  box-shadow: 0 0 0 1px #ff8e53 inset;
-}
-
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 30px;
-}
-
-.action-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  color: #606266;
-  transition: color 0.2s;
-}
-
-.action-item:hover {
-  color: #ff8e53;
-}
-
-.action-text {
-  font-size: 12px;
-  margin-top: 4px;
-}
-
-.user-avatar {
-  cursor: pointer;
-  margin-left: 10px;
-}
-
-.login-btn {
-  font-size: 14px;
-  color: #409eff;
-  cursor: pointer;
-  font-weight: 500;
-  margin-left: 10px;
-}
-
-.login-btn:hover {
-  text-decoration: underline;
+  min-height: 100vh;
+  background-color: var(--color-bg);
 }
 
 .app-main {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
+  padding-top: 46px; /* NavBar Height */
+  padding-bottom: calc(50px + env(safe-area-inset-bottom)); /* TabBar Height */
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-/* 页面切换动画 */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
+/* Slide Fade Animation */
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
 }
 
-.fade-enter-from,
-.fade-leave-to {
+.slide-fade-leave-active {
+  transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
+.slide-fade-leave-to {
+  transform: translateX(-20px);
   opacity: 0;
 }
 </style>
