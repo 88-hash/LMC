@@ -7,7 +7,7 @@
         <span>点击刷新订单状态</span>
       </div>
 
-      <el-empty v-if="orders.length === 0" description="暂无订单" />
+      <el-empty v-if="orders.length === 0" description="暂无订单" image="https://placehold.co/200x200?text=No+Orders" />
       <div v-else class="order-list">
         <div v-for="o in orders" :key="o.id" class="order-card animate__animated animate__fadeIn">
           <div class="head">

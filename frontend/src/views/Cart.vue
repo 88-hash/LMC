@@ -1,7 +1,7 @@
 <template>
   <div class="cart-page">
     <div class="list-card">
-      <el-empty v-if="items.length === 0" description="购物车空空如也" />
+      <el-empty v-if="items.length === 0" description="购物车空空如也" image="https://placehold.co/200x200?text=Empty+Cart" />
       <div v-else class="cart-list">
         <transition-group name="fade">
           <div v-for="item in items" :key="item.id" class="cart-item">
@@ -270,4 +270,3 @@ onMounted(load)
 .fade-leave-active, .fade-enter-active { transition: all .25s }
 .fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(10px) }
 </style>
-

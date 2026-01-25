@@ -46,7 +46,7 @@
           <el-empty description="暂无相关商品" />
         </div>
 
-        <div class="goods-list">
+        <div class="goods-list" v-if="!loading">
           <div 
             v-for="goods in filteredGoodsList" 
             :key="goods.id" 
@@ -70,6 +70,17 @@
             </div>
           </div>
         </div>
+        
+        <div v-else class="goods-list">
+          <div v-for="n in 6" :key="n" class="goods-card skeleton">
+            <div class="img-box skeleton-bg"></div>
+            <div class="info-box">
+              <div class="skeleton-line short"></div>
+              <div class="skeleton-line long"></div>
+              <div class="skeleton-line price"></div>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   </div>
@@ -85,6 +96,7 @@ import { useCartStore } from '../stores/cart'
 const cartStore = useCartStore()
 const categoryList = ref([])
 const goodsList = ref([])
+const loading = ref(false)
 const currentCategoryId = ref(0)
 
 const banners = [
@@ -113,9 +125,11 @@ const fetchCategories = async () => {
 
 const fetchGoods = async () => {
   try {
+    loading.value = true
     const res = await request.get('/goods/list')
     if (res.code === 1) goodsList.value = res.data
   } catch (e) { console.error(e) }
+  finally { loading.value = false }
 }
 
 const addToCart = async (goods) => {
@@ -295,7 +309,7 @@ const addToCart = async (goods) => {
   padding: 12px;
   display: flex;
   gap: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
   transition: transform 0.1s;
 }
 
@@ -364,14 +378,14 @@ const addToCart = async (goods) => {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #ffcdb2; /* 柔和的主色调 */
   background: linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 8px rgba(255, 107, 107, 0.3);
+  box-shadow: 0 6px 12px rgba(255, 107, 107, 0.35);
   cursor: pointer;
+  position: relative;
 }
 
 .add-btn:active {
@@ -382,4 +396,11 @@ const addToCart = async (goods) => {
   padding: 40px;
   text-align: center;
 }
+
+/* Skeleton */
+.skeleton .skeleton-bg { background: #eee; }
+.skeleton .skeleton-line { height: 12px; background: #eee; border-radius: 6px; margin: 8px 0; }
+.skeleton .skeleton-line.short { width: 60%; }
+.skeleton .skeleton-line.long { width: 90%; }
+.skeleton .skeleton-line.price { width: 40%; }
 </style>

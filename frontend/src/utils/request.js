@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElLoading } from 'element-plus'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 
@@ -12,8 +12,19 @@ const request = axios.create({
 })
 
 // 请求拦截器
+let loadingInstance = null
+let pendingCount = 0
+let loadingTimer = null
 request.interceptors.request.use(config => {
   NProgress.start()
+  pendingCount++
+  if (!loadingTimer) {
+    loadingTimer = setTimeout(() => {
+      if (pendingCount > 0 && !loadingInstance) {
+        loadingInstance = ElLoading.service({ lock: true, text: '加载中...', background: 'rgba(0,0,0,0.3)' })
+      }
+    }, 300)
+  }
   
   // 智能鉴权：根据请求路径或页面路径判断使用哪个 Token
   // 如果当前是后台页面请求，优先使用 adminToken
@@ -35,12 +46,18 @@ request.interceptors.request.use(config => {
   return config
 }, error => {
   NProgress.done()
+  clearTimeout(loadingTimer); loadingTimer = null
+  pendingCount = Math.max(0, pendingCount - 1)
+  if (pendingCount === 0 && loadingInstance) { loadingInstance.close(); loadingInstance = null }
   return Promise.reject(error)
 })
 
 // 响应拦截器
 request.interceptors.response.use(res => {
   NProgress.done()
+  clearTimeout(loadingTimer); loadingTimer = null
+  pendingCount = Math.max(0, pendingCount - 1)
+  if (pendingCount === 0 && loadingInstance) { loadingInstance.close(); loadingInstance = null }
   const data = res.data
   if (data.code === 1) {
     return data
@@ -50,6 +67,9 @@ request.interceptors.response.use(res => {
   }
 }, error => {
   NProgress.done()
+  clearTimeout(loadingTimer); loadingTimer = null
+  pendingCount = Math.max(0, pendingCount - 1)
+  if (pendingCount === 0 && loadingInstance) { loadingInstance.close(); loadingInstance = null }
   if (error.response && error.response.status === 401) {
     // 区分前后端跳转
     const isAdmin = window.location.pathname.startsWith('/admin')

@@ -60,8 +60,13 @@ public class OrderController {
 
     @GetMapping("/detail")
     public Result<Map<String, Object>> detail(@RequestParam Long id) {
-        // Interceptor 已校验登录
-        return Result.success(orderService.detail(id));
+        Long currentUserId = (Long) request.getAttribute("userId");
+        Map<String, Object> data = orderService.detail(id);
+        Order order = (Order) data.get("order");
+        if (order != null && !order.getUserId().equals(currentUserId)) {
+            return Result.error("无权访问");
+        }
+        return Result.success(data);
     }
 
     @GetMapping("/getByNo")
@@ -73,9 +78,7 @@ public class OrderController {
         // 安全校验：只能查自己的订单 (除非是管理员)
         Long currentUserId = (Long) request.getAttribute("userId");
         if (!order.getUserId().equals(currentUserId)) {
-            // 简单防越权，实际项目可以更严谨
-            // return Result.error("无权访问"); 
-            // 既然是演示，暂时先放行或者记录日志
+            return Result.error("无权访问");
         }
         return Result.success(order);
     }

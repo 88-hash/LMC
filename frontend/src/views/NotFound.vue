@@ -1,12 +1,10 @@
 <template>
-  <div class="not-found-container">
-    <div class="content animate__animated animate__bounceIn">
+  <div class="notfound">
+    <div class="box">
       <div class="emoji">🍪</div>
-      <h1 class="title">哎呀，页面被贪吃鬼偷走了！</h1>
-      <p class="desc">您访问的页面好像不存在，或者正在烤箱里烘焙中...</p>
-      <el-button type="primary" size="large" round @click="$router.push('/')">
-        返回首页
-      </el-button>
+      <div class="title">页面走丢了</div>
+      <div class="subtitle">别慌，点击下方按钮返回首页</div>
+      <el-button type="primary" round @click="$router.push('/')">回到首页</el-button>
     </div>
   </div>
 </template>
@@ -15,37 +13,21 @@
 </script>
 
 <style scoped>
-.not-found-container {
-  height: 100vh;
-  width: 100vw;
-  background-color: #f7f1e3;
+.notfound {
+  min-height: 100vh;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  background: #f8f9fb;
+}
+.box {
   text-align: center;
+  background: #fff;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
 }
-
-.emoji {
-  font-size: 80px;
-  margin-bottom: 20px;
-  animation: float 3s ease-in-out infinite;
-}
-
-.title {
-  color: #2c3e50;
-  font-size: 28px;
-  margin-bottom: 10px;
-  font-weight: 800;
-}
-
-.desc {
-  color: #7f8c8d;
-  margin-bottom: 30px;
-}
-
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-15px); }
-  100% { transform: translateY(0px); }
-}
+.emoji { font-size: 64px; margin-bottom: 12px; }
+.title { font-size: 22px; font-weight: 800; color: #333; margin-bottom: 6px; }
+.subtitle { color: #888; margin-bottom: 18px; }
 </style>
