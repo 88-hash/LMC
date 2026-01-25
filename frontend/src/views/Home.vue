@@ -3,7 +3,7 @@
     <div class="shop-header">
       <div class="header-content">
         <div class="brand-title">🍬 乐逸零食</div>
-        <div class="brand-subtitle">Leyi Snack Shop</div>
+        <div class="brand-subtitle">李先生的小店</div>
       </div>
       <div class="search-bar-box">
         <el-input prefix-icon="Search" placeholder="搜索美味零食..." class="round-search" />
@@ -42,6 +42,8 @@
           </el-carousel>
         </div>
         
+        
+
         <div v-if="filteredGoodsList.length === 0" class="empty-state">
           <el-empty description="暂无相关商品" />
         </div>
@@ -131,6 +133,8 @@ const fetchGoods = async () => {
   } catch (e) { console.error(e) }
   finally { loading.value = false }
 }
+
+// 收藏功能回退（不保留）
 
 const addToCart = async (goods) => {
   console.log('addToCart:', goods)
@@ -295,6 +299,9 @@ const addToCart = async (goods) => {
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
 }
 
+/* 分类横向滚动双排 */
+/* 分类横向滚动双排回退 */
+
 /* 商品列表 */
 .goods-list {
   display: flex;
@@ -324,6 +331,7 @@ const addToCart = async (goods) => {
   border-radius: 12px;
   overflow: hidden;
   background: #f9f9f9;
+  position: relative;
 }
 
 .img-box img {
@@ -331,6 +339,8 @@ const addToCart = async (goods) => {
   height: 100%;
   object-fit: cover;
 }
+
+/* 收藏按钮回退 */
 
 .info-box {
   flex: 1;
@@ -403,4 +413,6 @@ const addToCart = async (goods) => {
 .skeleton .skeleton-line.short { width: 60%; }
 .skeleton .skeleton-line.long { width: 90%; }
 .skeleton .skeleton-line.price { width: 40%; }
+
+/* 分类配色占位函数需要的颜色表，直接内联在组件方法中 */
 </style>
