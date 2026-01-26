@@ -1,8 +1,8 @@
 <template>
-  <div class="app-layout">
+  <div class="app-layout app-shell">
     <NavBar />
     
-    <main class="app-main">
+    <main class="app-main content-area">
       <router-view v-slot="{ Component }">
         <transition name="slide-fade" mode="out-in">
           <component :is="Component" :key="$route.path" />

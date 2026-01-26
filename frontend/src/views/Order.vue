@@ -19,11 +19,9 @@
           <div class="body">
             <div class="items">
               <el-skeleton v-if="!details[o.id]" rows="2" animated />
-              <div v-else class="item-list">
-                <div v-for="it in details[o.id]" :key="it.id" class="item">
-                  <span class="name">{{ it.goodsName }}</span>
-                  <span class="qty">x{{ it.quantity }}</span>
-                </div>
+              <div v-else class="thumbs">
+                <div v-for="it in details[o.id].slice(0,3)" :key="it.id" class="thumb">{{ it.goodsName }}</div>
+                <div v-if="details[o.id].length>3" class="more">+{{ details[o.id].length-3 }}</div>
               </div>
             </div>
             
@@ -145,9 +143,10 @@ onMounted(load)
 .order-card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 .head { display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px dashed #f0f0f0; }
 .no { font-weight: 600; color: #333; font-size: 14px; }
-.items { background: #f9f9f9; border-radius: 8px; padding: 8px; }
-.item-list { display: flex; flex-direction: column; gap: 6px; }
-.item { display: flex; justify-content: space-between; color: #666; font-size: 13px; }
+.items { background: #f9f9f9; border-radius: 12px; padding: 8px; }
+.thumbs { display: flex; gap: 8px; flex-wrap: wrap }
+.thumb { padding: 6px 10px; background: #f6f7f9; border-radius: 12px; font-size: 12px; color: #666 }
+.more { padding: 6px 10px; border-radius: 12px; background: #eee; color: #666 }
 .meta { display: flex; justify-content: flex-end; align-items: baseline; gap: 8px; font-size: 13px; color: #666; }
 .price { color: #ff6b6b; font-size: 18px; font-weight: bold; }
 .foot { display: flex; justify-content: flex-end; padding-top: 4px; }

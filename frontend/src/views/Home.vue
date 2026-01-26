@@ -11,7 +11,7 @@
     </div>
 
     <div class="shop-body">
-      <aside class="category-sidebar">
+      <aside class="category-sidebar home-sidebar">
         <div 
           class="sidebar-item" 
           :class="{ active: currentCategoryId === 0 }"
@@ -30,7 +30,7 @@
         </div>
       </aside>
 
-      <main class="product-area">
+      <main class="product-area home-content">
         <div class="banner-box">
           <el-carousel :interval="4000" height="160px" arrow="never" indicator-position="none">
             <el-carousel-item v-for="item in banners" :key="item.id">
@@ -52,7 +52,7 @@
           <div 
             v-for="goods in filteredGoodsList" 
             :key="goods.id" 
-            class="goods-card animate__animated animate__fadeIn"
+            class="goods-card card animate__animated animate__fadeIn"
           >
             <div class="img-box">
               <img 
@@ -223,53 +223,65 @@ const addToCart = async (goods) => {
 }
 
 /* 3. 左侧导航 (.category-sidebar) */
-.category-sidebar {
-  width: 100px;
+.home-sidebar {
+  width: 30%;
+  min-width: 140px;
   background-color: #f7f8fa;
   overflow-y: auto;
   padding-bottom: 20px;
 }
 
 /* 隐藏滚动条 */
-.category-sidebar::-webkit-scrollbar,
-.product-area::-webkit-scrollbar {
+.home-sidebar::-webkit-scrollbar,
+.home-content::-webkit-scrollbar {
   display: none;
 }
 
 .sidebar-item {
-  padding: 16px 10px;
-  text-align: center;
+  padding: 12px 14px;
+  text-align: left;
   font-size: 14px;
   color: #666;
   position: relative;
   transition: all 0.2s;
   cursor: pointer;
+  border-radius: 99px;
+  margin: 8px 12px;
+  background: rgba(255,255,255,0.6);
+  display: flex;
+  align-items: center;
+  min-height: 46px;
 }
 
 .sidebar-item.active {
   background-color: #ffffff;
-  color: #333;
+  color: #ff6b6b;
   font-weight: 800;
-  font-size: 16px;
-  border-top-left-radius: 12px;
-  border-bottom-left-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 
 .sidebar-item.active::before {
   content: '';
   position: absolute;
-  left: 0;
+  left: 8px;
   top: 50%;
   transform: translateY(-50%);
-  height: 20px;
-  width: 4px;
+  height: 10px;
+  width: 10px;
   background-color: #ff6b6b;
-  border-radius: 0 4px 4px 0;
+  border-radius: 50%;
+}
+.item-text {
+  width: 100%;
+  margin-left: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 4. 右侧商品区 (.product-area) */
-.product-area {
-  flex: 1;
+.home-content {
+  width: 70%;
   background-color: #ffffff;
   overflow-y: auto;
   padding: 12px;
@@ -308,8 +320,9 @@ const addToCart = async (goods) => {
   flex-direction: column;
   gap: 16px;
   padding-bottom: 20px;
+  background: #fff;
+  border-radius: 16px;
 }
-
 .goods-card {
   background: #fff;
   border-radius: 16px;
@@ -318,6 +331,7 @@ const addToCart = async (goods) => {
   gap: 12px;
   box-shadow: 0 6px 18px rgba(0,0,0,0.08);
   transition: transform 0.1s;
+  position: relative;
 }
 
 .goods-card:active {
@@ -369,8 +383,9 @@ const addToCart = async (goods) => {
 
 .goods-bottom {
   display: flex;
-  justify-content: space-between;
   align-items: flex-end;
+  justify-content: space-between;
+  padding-right: 56px;
 }
 
 .price {
@@ -385,8 +400,8 @@ const addToCart = async (goods) => {
 }
 
 .add-btn {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%);
   color: white;
@@ -395,7 +410,9 @@ const addToCart = async (goods) => {
   justify-content: center;
   box-shadow: 0 6px 12px rgba(255, 107, 107, 0.35);
   cursor: pointer;
-  position: relative;
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
 }
 
 .add-btn:active {
@@ -413,6 +430,4 @@ const addToCart = async (goods) => {
 .skeleton .skeleton-line.short { width: 60%; }
 .skeleton .skeleton-line.long { width: 90%; }
 .skeleton .skeleton-line.price { width: 40%; }
-
-/* 分类配色占位函数需要的颜色表，直接内联在组件方法中 */
 </style>

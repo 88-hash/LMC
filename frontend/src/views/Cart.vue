@@ -15,7 +15,7 @@
               <div class="meta">
                 <span class="price">¥ {{ item.price }}</span>
               </div>
-              <div class="actions">
+              <div class="qty-bar">
                 <el-button size="small" circle @click="decr(item)"><el-icon><Minus /></el-icon></el-button>
                 <el-input-number v-model="item.quantity" :min="1" :max="999" @change="onChange(item)" />
                 <el-button size="small" circle @click="incr(item)"><el-icon><Plus /></el-icon></el-button>
@@ -184,18 +184,20 @@ onMounted(load)
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 80px;
+  gap: 8px;
+  min-height: 80px;
 }
 
 .title {
-  font-weight: 600;
+  font-weight: 700;
   color: #333;
   font-size: 15px;
+  line-height: 1.4;
+  word-break: break-word;
+  overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .meta {
@@ -210,11 +212,7 @@ onMounted(load)
   font-size: 16px;
 }
 
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+.qty-bar { display:flex; align-items:center; gap:8px; background:#fff; border-radius:99px; box-shadow: var(--shadow-soft); padding:6px 8px; width:max-content }
 
 .checkout-bar {
   position: fixed;
