@@ -36,6 +36,7 @@ public class VerifyServiceImpl implements VerifyService {
 
     @Override
     public java.util.List<Order> listPending() {
+        // 调用 OrderMapper 的 selectAll 方法，传入 status=0 (待核销)
         return orderMapper.selectAll(0, null, null, null, 0, 1000);
     }
 

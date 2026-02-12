@@ -14,13 +14,7 @@
     </insert>
 
     <update id="update" parameterType="com.leyi.snack.entity.User">
-        UPDATE user
-        <set>
-            <if test="name != null">name = #{name},</if>
-            <if test="avatar != null">avatar = #{avatar},</if>
-            updated_at = NOW()
-        </set>
-        WHERE id = #{id}
+        UPDATE user SET updated_at = NOW() WHERE id = #{id}
     </update>
 
 </mapper>

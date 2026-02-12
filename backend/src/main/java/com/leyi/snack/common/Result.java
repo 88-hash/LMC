@@ -32,4 +32,16 @@ public class Result<T> {
         result.message = message;
         return result;
     }
+
+    public static <T> Result<T> error(String codeStr, String message) {
+        Result<T> result = new Result<>();
+        // 这里尝试解析codeStr为Integer，如果不是数字则默认为0
+        try {
+            result.code = Integer.parseInt(codeStr);
+        } catch (NumberFormatException e) {
+            result.code = 0; 
+        }
+        result.message = message;
+        return result;
+    }
 }
