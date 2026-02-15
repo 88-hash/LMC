@@ -23,10 +23,15 @@ cd admin
 start "LeYi Admin" cmd /c "npm run dev"
 cd ..
 
-echo [4/4] Opening Browsers (wait 15s)...
+echo [4/4] Opening in default browser (wait 15s)...
 timeout /t 15 >nul
-start http://localhost:5173/
-start http://localhost:5174/admin/login
+set "CLIENT_URL=http://localhost:5173/login"
+set "ADMIN_URL=http://localhost:5174/admin/login"
+
+REM Use Windows URL handler so it always uses the system default browser.
+rundll32 url.dll,FileProtocolHandler %CLIENT_URL%
+timeout /t 2 >nul
+rundll32 url.dll,FileProtocolHandler %ADMIN_URL%
 
 echo.
 echo ==========================================
