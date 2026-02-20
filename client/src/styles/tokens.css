@@ -1,0 +1,14 @@
+:root {
+  --color-primary: #ffd700;
+  --color-accent: #ff69b4;
+  --color-link: #00bfff;
+  --color-success: #00e676;
+  --color-danger: #ff4d8d;
+  --color-bg: #fffbe6;
+  --color-text: #111111;
+  --shadow-card: 0 6px 0 rgba(0, 0, 0, 0.95), 0 8px 14px rgba(0, 0, 0, 0.18);
+  --shadow-float: 0 10px 0 rgba(0, 0, 0, 0.95), 0 14px 22px rgba(0, 0, 0, 0.2);
+  --radius-card: 20px;
+  --radius-pill: 999px;
+  --border-strong: 2px solid #000000;
+}

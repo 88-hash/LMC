@@ -11,6 +11,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.net.URLEncoder;
 import java.util.Random;
 
 @Component
@@ -27,13 +31,18 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     @Transactional
-    public void run(String... args) throws Exception {
-        // 0. 暴力重置表结构 (修复字段缺失问题)
-        jdbcTemplate.execute("DROP TABLE IF EXISTS `order_item`");
-        jdbcTemplate.execute("DROP TABLE IF EXISTS `orders`"); // 旧表名
-        jdbcTemplate.execute("DROP TABLE IF EXISTS `order`");  // 新表名
+    public void run(String... args) {
+        recreateOrderTables();
+        ensureCategorySchema();
+        seedBaseUser();
+        seedCategoryAndGoods();
+    }
 
-        // 1. 确保表结构存在 (兼容 `init.sql`)
+    private void recreateOrderTables() {
+        jdbcTemplate.execute("DROP TABLE IF EXISTS `order_item`");
+        jdbcTemplate.execute("DROP TABLE IF EXISTS `orders`");
+        jdbcTemplate.execute("DROP TABLE IF EXISTS `order`");
+
         jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS `order` (" +
                 "  `id` bigint(20) NOT NULL AUTO_INCREMENT," +
                 "  `order_no` varchar(64) NOT NULL," +
@@ -59,7 +68,7 @@ public class DataInitializer implements CommandLineRunner {
                 "  PRIMARY KEY (`id`)" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 
-        jdbcTemplate.execute("DROP TABLE IF EXISTS `verify_log`"); // 强制重建
+        jdbcTemplate.execute("DROP TABLE IF EXISTS `verify_log`");
         jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS `verify_log` (" +
                 "  `id` bigint(20) NOT NULL AUTO_INCREMENT," +
                 "  `order_id` bigint(20) NOT NULL," +
@@ -69,71 +78,149 @@ public class DataInitializer implements CommandLineRunner {
                 "  `remark` varchar(255) DEFAULT NULL," +
                 "  PRIMARY KEY (`id`)" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+    }
 
-        // 2. 插入测试用户 (为了 userId=1 能通过)
+    private void ensureCategorySchema() {
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS `category1` (" +
+                "  `id` bigint NOT NULL AUTO_INCREMENT," +
+                "  `name` varchar(50) NOT NULL," +
+                "  `sort` int DEFAULT 0," +
+                "  `created_at` datetime DEFAULT CURRENT_TIMESTAMP," +
+                "  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+                "  PRIMARY KEY (`id`)," +
+                "  UNIQUE KEY `uk_category1_name` (`name`)" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS `category2` (" +
+                "  `id` bigint NOT NULL AUTO_INCREMENT," +
+                "  `parent_id` bigint NOT NULL," +
+                "  `name` varchar(50) NOT NULL," +
+                "  `sort` int DEFAULT 0," +
+                "  `created_at` datetime DEFAULT CURRENT_TIMESTAMP," +
+                "  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+                "  PRIMARY KEY (`id`)," +
+                "  KEY `idx_parent_id` (`parent_id`)," +
+                "  UNIQUE KEY `uk_category2_parent_name` (`parent_id`, `name`)" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+        ensureGoodsTable();
+
+        Integer hasCategory2Id = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM information_schema.columns " +
+                        "WHERE table_schema = DATABASE() AND table_name = 'goods' AND column_name = 'category2_id'",
+                Integer.class
+        );
+        if (hasCategory2Id != null && hasCategory2Id == 0) {
+            jdbcTemplate.execute("ALTER TABLE goods ADD COLUMN category2_id bigint DEFAULT NULL COMMENT '二级分类ID'");
+        }
+
+        Integer hasCategoryId = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM information_schema.columns " +
+                        "WHERE table_schema = DATABASE() AND table_name = 'goods' AND column_name = 'category_id'",
+                Integer.class
+        );
+        if (hasCategoryId != null && hasCategoryId == 0) {
+            jdbcTemplate.execute("ALTER TABLE goods ADD COLUMN category_id bigint DEFAULT NULL COMMENT '兼容旧分类字段'");
+        }
+
+        jdbcTemplate.execute("UPDATE goods SET category2_id = category_id WHERE category2_id IS NULL AND category_id IS NOT NULL");
+        jdbcTemplate.execute("UPDATE goods SET category_id = category2_id WHERE category_id IS NULL AND category2_id IS NOT NULL");
+    }
+
+    private void ensureGoodsTable() {
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS `goods` (" +
+                "  `id` bigint NOT NULL AUTO_INCREMENT," +
+                "  `category_id` bigint DEFAULT NULL," +
+                "  `category2_id` bigint DEFAULT NULL," +
+                "  `name` varchar(100) NOT NULL," +
+                "  `price` decimal(10,2) NOT NULL," +
+                "  `stock` int DEFAULT 0," +
+                "  `bar_code` varchar(50) DEFAULT NULL," +
+                "  `image_url` varchar(255) DEFAULT NULL," +
+                "  `description` text," +
+                "  `is_on_sale` tinyint DEFAULT 1," +
+                "  `expire_date` date DEFAULT NULL," +
+                "  `is_deleted` tinyint DEFAULT 0," +
+                "  `created_at` datetime DEFAULT CURRENT_TIMESTAMP," +
+                "  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+                "  PRIMARY KEY (`id`)" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+    }
+
+    private void seedBaseUser() {
         try {
             jdbcTemplate.execute("INSERT IGNORE INTO user (id, name, phone, password, created_at) " +
                     "VALUES (1, '测试店长', '13800000000', '123456', NOW())");
-        } catch (Exception e) {
-            // 忽略，可能表结构不同
-        }
-
-        // 3. 清空商品数据 (重新灌入)
-        jdbcTemplate.execute("DELETE FROM goods");
-        jdbcTemplate.execute("DELETE FROM category");
-
-        String[] cateNames = {"快乐水", "膨化食品", "方便速食", "精品糖果", "肉肉零食", "网红新品"};
-        Long[] cateIds = new Long[cateNames.length];
-
-        for (int i = 0; i < cateNames.length; i++) {
-            Category category = new Category();
-            category.setName(cateNames[i]);
-            category.setParentId(0L);
-            category.setSort(i);
-            categoryMapper.save(category);
-            cateIds[i] = category.getId();
-        }
-
-        String[][] goodsData = {
-            {"可口可乐 330ml", "3.00", "0", "https://placehold.co/400x400?text=Coke"},
-            {"百事可乐 无糖", "3.00", "0", "https://placehold.co/400x400?text=Pepsi"},
-            {"元气森林 白桃味", "5.50", "0", "https://placehold.co/400x400?text=Genki"},
-            {"农夫山泉 矿泉水", "2.00", "0", "https://placehold.co/400x400?text=Water"},
-
-            {"乐事薯片 原味", "7.50", "1", "https://placehold.co/400x400?text=Lays"},
-            {"乐事薯片 黄瓜味", "7.50", "1", "https://placehold.co/400x400?text=Lays"},
-            {"浪味仙 蔬菜味", "6.00", "1", "https://placehold.co/400x400?text=Snack"},
-            {"上好佳 鲜虾片", "5.00", "1", "https://placehold.co/400x400?text=Snack"},
-
-            {"康师傅 红烧牛肉面", "4.50", "2", "https://placehold.co/400x400?text=Noodle"},
-            {"统一 老坛酸菜面", "4.50", "2", "https://placehold.co/400x400?text=Noodle"},
-            {"自嗨锅 麻辣烫", "15.80", "2", "https://placehold.co/400x400?text=Hotpot"},
-            {"螺霸王 螺蛳粉", "12.90", "2", "https://placehold.co/400x400?text=Luosifen"},
-
-            {"阿尔卑斯 棒棒糖", "1.00", "3", "https://placehold.co/400x400?text=Candy"},
-            {"大白兔 奶糖", "18.00", "3", "https://placehold.co/400x400?text=Candy"},
-            {"德芙 巧克力", "12.50", "3", "https://placehold.co/400x400?text=Chocolate"},
-
-            {"卫龙 大面筋", "3.50", "4", "https://placehold.co/400x400?text=Spicy"},
-            {"无穷 鸡翅根", "8.90", "4", "https://placehold.co/400x400?text=Chicken"},
-            {"百草味 鸭脖", "6.50", "4", "https://placehold.co/400x400?text=Duck"},
-
-            {"魔芋爽 香辣味", "1.50", "5", "https://placehold.co/400x400?text=Konjac"},
-            {"半熟芝士 蛋糕", "8.80", "5", "https://placehold.co/400x400?text=Cake"}
-        };
-
-        Random random = new Random();
-        for (String[] g : goodsData) {
-            Goods goods = new Goods();
-            goods.setName(g[0]);
-            goods.setPrice(new BigDecimal(g[1]));
-            int cateIndex = Integer.parseInt(g[2]);
-            goods.setCategoryId(cateIds[cateIndex]);
-            goods.setImageUrl(g[3]);
-            goods.setStock(random.nextInt(90) + 10);
-            goods.setIsOnSale(1);
-            goods.setBarCode("69" + (System.currentTimeMillis() + random.nextInt(1000)));
-            goodsMapper.save(goods);
+        } catch (Exception ignored) {
         }
     }
+
+    private void seedCategoryAndGoods() {
+        jdbcTemplate.execute("DELETE FROM goods");
+        jdbcTemplate.execute("DELETE FROM category2");
+        jdbcTemplate.execute("DELETE FROM category1");
+
+        String[] level1Names = {
+                "饮品", "膨化零食", "方便速食", "糖果巧克力", "肉类零食", "坚果果干"
+        };
+
+        String[][] level2Names = {
+                {"苏打水", "汽水", "果汁", "茶饮", "功能饮"},
+                {"薯片", "玉米脆", "米饼", "海苔脆", "辣条"},
+                {"泡面", "粉丝", "自热饭", "速食汤", "即食面包"},
+                {"软糖", "硬糖", "巧克力", "威化", "果冻"},
+                {"牛肉干", "鸡胸肉", "鸭脖", "猪肉脯", "卤蛋"},
+                {"综合坚果", "巴旦木", "开心果", "果干", "谷物棒"}
+        };
+
+        String[] variants = {"经典款", "青柠味", "海盐味", "蜜桃味", "香辣味", "无糖款", "轻享装", "分享装"};
+        Random random = new Random(20260220L);
+        long barCodeSeed = 6900000000000L;
+
+        for (int i = 0; i < level1Names.length; i++) {
+            Category level1 = new Category();
+            level1.setName(level1Names[i]);
+            level1.setSort(i + 1);
+            categoryMapper.saveLevel1(level1);
+
+            for (int j = 0; j < level2Names[i].length; j++) {
+                Category level2 = new Category();
+                level2.setParentId(level1.getId());
+                level2.setName(level2Names[i][j]);
+                level2.setSort(j + 1);
+                categoryMapper.saveLevel2(level2);
+
+                for (int k = 0; k < variants.length; k++) {
+                    Goods goods = new Goods();
+                    goods.setCategory2Id(level2.getId());
+                    goods.setCategoryId(level2.getId());
+                    goods.setName(level2Names[i][j] + " " + variants[k]);
+                    goods.setPrice(buildPrice(i, j, k, random));
+                    goods.setStock(28 + random.nextInt(180));
+                    goods.setBarCode(String.valueOf(barCodeSeed++));
+                    goods.setImageUrl(buildImage(level2Names[i][j], variants[k]));
+                    goods.setDescription(buildDescription(level1Names[i], level2Names[i][j], variants[k]));
+                    goods.setIsOnSale(1);
+                    goods.setExpireDate(LocalDate.now().plusDays(90L + random.nextInt(180)));
+                    goodsMapper.save(goods);
+                }
+            }
+        }
+    }
+
+    private BigDecimal buildPrice(int i, int j, int k, Random random) {
+        double base = 3.2 + (i * 0.85) + (j * 0.45) + (k * 0.35);
+        double wave = random.nextDouble() * 1.8;
+        return BigDecimal.valueOf(base + wave).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private String buildImage(String level2, String variant) {
+        String text = URLEncoder.encode(level2 + " " + variant, StandardCharsets.UTF_8);
+        return "https://placehold.co/400x400/FFF8D6/111111?text=" + text;
+    }
+
+    private String buildDescription(String level1, String level2, String variant) {
+        return "【" + level1 + "-" + level2 + "】" + variant + "，口感扎实，适合追剧、通勤和办公室补给。";
+    }
 }
+

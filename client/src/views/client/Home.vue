@@ -1,143 +1,310 @@
-<template>
+﻿<template>
   <div class="mobile-shop-container">
-    <div class="shop-header">
+    <header class="shop-header">
       <div class="header-content">
-        <div class="brand-title">🍬 乐逸零食</div>
-        <div class="brand-subtitle">李先生的小店</div>
+        <p class="brand-kicker">LEYI SNACK</p>
+        <h1 class="brand-title">今日零食补给</h1>
       </div>
       <div class="search-bar-box">
         <el-input prefix-icon="Search" placeholder="搜索美味零食..." class="round-search" />
       </div>
-    </div>
+    </header>
 
-    <div class="shop-body">
-      <aside class="category-sidebar home-sidebar">
-        <div 
-          class="sidebar-item" 
-          :class="{ active: currentCategoryId === 0 }"
-          @click="currentCategoryId = 0"
+    <section class="category-strip">
+      <div class="category-track">
+        <div
+          class="category-pill"
+          :class="{ active: currentCategory1Id === 0 }"
+          @click="onCategory1Change(0)"
         >
-          <span class="item-text">全部</span>
+          全部
         </div>
-        <div 
-          v-for="cate in categoryList" 
+        <div
+          v-for="cate in category1List"
           :key="cate.id"
-          class="sidebar-item"
-          :class="{ active: currentCategoryId === cate.id }"
-          @click="currentCategoryId = cate.id"
+          class="category-pill"
+          :class="{ active: currentCategory1Id === cate.id }"
+          @click="onCategory1Change(cate.id)"
         >
-          <span class="item-text">{{ cate.name }}</span>
+          {{ cate.name }}
         </div>
-      </aside>
+      </div>
+    </section>
 
-      <main class="product-area home-content">
-        <div class="banner-box">
-          <el-carousel :interval="4000" height="160px" arrow="never" indicator-position="none">
-            <el-carousel-item v-for="item in banners" :key="item.id">
-              <div class="banner-item" :style="{ backgroundColor: item.color }">
-                <span class="banner-text">{{ item.text }}</span>
-                <span class="banner-emoji">{{ item.emoji }}</span>
-              </div>
-            </el-carousel-item>
-          </el-carousel>
-        </div>
-        
-        
+    <section class="subcategory-strip" v-if="currentCategory1Id !== 0 && category2List.length > 0">
+      <div class="subcategory-track">
+        <button
+          type="button"
+          class="subcategory-chip"
+          :class="{ active: currentCategory2Id === 0 }"
+          @click="onCategory2Change(0)"
+        >
+          全部
+        </button>
+        <button
+          v-for="sub in category2List"
+          :key="sub.id"
+          type="button"
+          class="subcategory-chip"
+          :class="{ active: currentCategory2Id === sub.id }"
+          @click="onCategory2Change(sub.id)"
+        >
+          {{ sub.name }}
+        </button>
+      </div>
+    </section>
 
-        <div v-if="filteredGoodsList.length === 0" class="empty-state">
-          <el-empty description="暂无相关商品" />
-        </div>
-
-        <div class="goods-list" v-if="!loading">
-          <div 
-            v-for="goods in filteredGoodsList" 
-            :key="goods.id" 
-            class="goods-card card animate__animated animate__fadeIn"
+    <section class="spotlight-zone" v-if="spotlightGoods.length">
+      <div class="spotlight-head">
+        <p class="spotlight-title">今日亮点</p>
+        <div class="spotlight-tabs">
+          <button
+            v-for="tab in spotlightTabs"
+            :key="tab.key"
+            type="button"
+            class="spotlight-tab"
+            :class="{ active: activeSpotlight === tab.key }"
+            @click="activeSpotlight = tab.key"
           >
-            <div class="img-box">
-              <img 
-                :src="goods.imageUrl || 'https://placehold.co/200x200/f5f5f5/ccc?text=Snack'" 
-                loading="lazy" 
-              />
-            </div>
-            <div class="info-box">
-              <h3 class="goods-name">{{ goods.name }}</h3>
-              <div class="goods-meta">销量 99+</div>
-              <div class="goods-bottom">
-                <span class="price">¥<span class="price-num">{{ goods.price }}</span></span>
-                <div class="add-btn" @click.stop="addToCart(goods)">
-                  <el-icon><Plus /></el-icon>
-                </div>
+            {{ tab.label }}
+          </button>
+        </div>
+      </div>
+
+      <div class="spotlight-track">
+        <article
+          v-for="goods in spotlightGoods"
+          :key="'spot-' + goods.id"
+          class="spotlight-card"
+          @click="openGoodsDetail(goods)"
+        >
+          <div class="spotlight-thumb">
+            <img :src="goods.imageUrl || 'https://placehold.co/200x200/f5f5f5/ccc?text=Snack'" loading="lazy" />
+          </div>
+          <div class="spotlight-info">
+            <h4 class="spotlight-name">{{ goods.name }}</h4>
+            <p class="spotlight-price">￥{{ goods.price }}</p>
+          </div>
+          <button type="button" class="spotlight-add" @click.stop="addToCart(goods)">
+            <el-icon><Plus /></el-icon>
+          </button>
+        </article>
+      </div>
+    </section>
+
+    <main class="home-feed">
+      <div v-if="filteredGoodsList.length === 0" class="empty-state">
+        <el-empty description="暂无相关商品" />
+      </div>
+
+      <div class="goods-list" v-if="!loading">
+        <div
+          v-for="goods in filteredGoodsList"
+          :key="goods.id"
+          class="goods-card card animate__animated animate__fadeIn"
+          @click="openGoodsDetail(goods)"
+        >
+          <div class="img-box">
+            <img
+              :src="goods.imageUrl || 'https://placehold.co/200x200/f5f5f5/ccc?text=Snack'"
+              loading="lazy"
+            />
+          </div>
+          <div class="info-box">
+            <h3 class="goods-name">{{ goods.name }}</h3>
+            <div class="goods-meta">销量 99+</div>
+            <div class="goods-bottom">
+              <span class="price">¥<span class="price-num">{{ goods.price }}</span></span>
+              <div class="add-btn" @click.stop="addToCart(goods)">
+                <el-icon><Plus /></el-icon>
               </div>
             </div>
           </div>
         </div>
-        
-        <div v-else class="goods-list">
-          <div v-for="n in 6" :key="n" class="goods-card skeleton">
-            <div class="img-box skeleton-bg"></div>
-            <div class="info-box">
-              <div class="skeleton-line short"></div>
-              <div class="skeleton-line long"></div>
-              <div class="skeleton-line price"></div>
-            </div>
+      </div>
+
+      <div v-else class="goods-list">
+        <div v-for="n in 6" :key="n" class="goods-card skeleton">
+          <div class="img-box skeleton-bg"></div>
+          <div class="info-box">
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-line long"></div>
+            <div class="skeleton-line price"></div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import request from '../../utils/request'
 import { useCartStore } from '../../stores/cart'
 
 const cartStore = useCartStore()
-const categoryList = ref([])
+const router = useRouter()
+const category1List = ref([])
+const category2List = ref([])
+const allCategories = ref([])
 const goodsList = ref([])
 const loading = ref(false)
-const currentCategoryId = ref(0)
+const currentCategory1Id = ref(0)
+const currentCategory2Id = ref(0)
+const activeSpotlight = ref('recommended')
 
-const banners = [
-  { id: 1, color: '#ff9a9e', text: '今日特惠', emoji: '🍬' },
-  { id: 2, color: '#a18cd1', text: '新品上市', emoji: '🍪' },
-  { id: 3, color: '#fad0c4', text: '人气推荐', emoji: '🍩' }
+const spotlightTabs = [
+  { key: 'recommended', label: '今日推荐' },
+  { key: 'hot', label: '爆款' },
+  { key: 'new', label: '新品' }
 ]
 
-// ... (existing logic)
-const filteredGoodsList = computed(() => {
-  if (currentCategoryId.value === 0) return goodsList.value
-  return goodsList.value.filter(g => g.categoryId === currentCategoryId.value)
+const parseSalesScore = (goods) => {
+  const keys = ['sales', 'saleCount', 'sold', 'salesVolume', 'sellCount']
+  for (const key of keys) {
+    const value = Number(goods?.[key])
+    if (!Number.isNaN(value) && value > 0) return value
+  }
+  return 0
+}
+
+const normalizedGoods = computed(() => goodsList.value.filter(item => item && item.id !== undefined && item.id !== null))
+
+const spotlightPools = computed(() => {
+  const source = normalizedGoods.value
+  const recommended = source.slice(0, 10)
+  const hot = [...source]
+    .sort((a, b) => parseSalesScore(b) - parseSalesScore(a) || Number(b.id || 0) - Number(a.id || 0))
+    .slice(0, 10)
+  const newest = [...source]
+    .sort((a, b) => Number(b.id || 0) - Number(a.id || 0))
+    .slice(0, 10)
+  return { recommended, hot, new: newest }
 })
 
+const spotlightGoods = computed(() => spotlightPools.value[activeSpotlight.value] || spotlightPools.value.recommended)
+
+const filteredGoodsList = computed(() => goodsList.value)
+
 onMounted(async () => {
-  await fetchCategories()
+  await fetchCategory1()
   await fetchGoods()
 })
 
-const fetchCategories = async () => {
+const fetchCategory1 = async () => {
   try {
-    const res = await request.get('/category/list')
-    if (res.code === 1) categoryList.value = res.data
-  } catch (e) { console.error(e) }
+    const res = await request.get('/category1', { silentError: true })
+    if (res.code === 1) {
+      category1List.value = res.data || []
+      return
+    }
+  } catch (e) {
+    console.warn('category1 endpoint fallback to legacy list:', e?.message || e)
+  }
+
+  const all = await fetchAllCategoriesLegacy()
+  category1List.value = all.filter(c => Number(c.parentId || 0) === 0)
+}
+
+const fetchCategory2 = async (parentId) => {
+  if (!parentId || Number(parentId) === 0) {
+    category2List.value = []
+    return
+  }
+
+  try {
+    const res = await request.get('/category2', { params: { parentId }, silentError: true })
+    if (res.code === 1) {
+      category2List.value = res.data || []
+      return
+    }
+  } catch (e) {
+    console.warn('category2 endpoint fallback to legacy list:', e?.message || e)
+  }
+
+  const all = await fetchAllCategoriesLegacy()
+  category2List.value = all.filter(c => Number(c.parentId || 0) === Number(parentId))
 }
 
 const fetchGoods = async () => {
+  loading.value = true
   try {
-    loading.value = true
-    const res = await request.get('/goods/list')
-    if (res.code === 1) goodsList.value = res.data
-  } catch (e) { console.error(e) }
-  finally { loading.value = false }
+    try {
+      const params = {}
+      if (currentCategory1Id.value) params.category1Id = currentCategory1Id.value
+      if (currentCategory2Id.value) params.category2Id = currentCategory2Id.value
+
+      const res = await request.get('/goods', { params, silentError: true })
+      if (res.code === 1) {
+        goodsList.value = res.data || []
+        return
+      }
+    } catch (e) {
+      console.warn('goods filter endpoint fallback to legacy list:', e?.message || e)
+    }
+
+    try {
+      const legacy = await request.get('/goods/list', { silentError: true })
+      if (legacy.code === 1) {
+        goodsList.value = filterGoodsByCurrentCategory(legacy.data || [])
+      } else {
+        goodsList.value = []
+      }
+    } catch (e) {
+      console.error(e)
+      goodsList.value = []
+    }
+  } finally {
+    loading.value = false
+  }
 }
 
-// 收藏功能回退（不保留）
+const fetchAllCategoriesLegacy = async () => {
+  if (allCategories.value.length > 0) return allCategories.value
+  try {
+    const res = await request.get('/category/list', { silentError: true })
+    if (res.code === 1) {
+      allCategories.value = res.data || []
+      return allCategories.value
+    }
+  } catch (e) {
+    console.warn('legacy category/list request failed:', e?.message || e)
+  }
+  return []
+}
+
+const filterGoodsByCurrentCategory = (rawGoods) => {
+  if (!Array.isArray(rawGoods)) return []
+  if (currentCategory2Id.value) {
+    return rawGoods.filter(item => Number(item.categoryId) === Number(currentCategory2Id.value))
+  }
+  if (currentCategory1Id.value) {
+    const childIds = category2List.value.map(item => Number(item.id))
+    if (childIds.length > 0) {
+      return rawGoods.filter(item => childIds.includes(Number(item.categoryId)))
+    }
+    return rawGoods.filter(item => Number(item.categoryId) === Number(currentCategory1Id.value))
+  }
+  return rawGoods
+}
+
+const onCategory1Change = async (id) => {
+  currentCategory1Id.value = Number(id) || 0
+  currentCategory2Id.value = 0
+
+  await fetchCategory2(currentCategory1Id.value)
+  await fetchGoods()
+}
+
+const onCategory2Change = async (id) => {
+  currentCategory2Id.value = Number(id) || 0
+  await fetchGoods()
+}
 
 const addToCart = async (goods) => {
-  console.log('addToCart:', goods)
   try {
     const gid = Number(goods?.id)
     if (!gid || Number.isNaN(gid)) {
@@ -145,207 +312,370 @@ const addToCart = async (goods) => {
       return
     }
     const res = await request.post('/cart/add', { goodsId: gid, quantity: 1 })
-    console.log('addToCart res:', res)
     if (res.code === 1) {
       ElMessage.success('已加入购物车')
       cartStore.refresh()
     } else {
       ElMessage.error(res.message || '加购失败，请稍后重试')
     }
-  } catch (e) { 
+  } catch (e) {
     console.error(e)
     ElMessage.error('网络连接异常，请检查网络')
   }
 }
+
+const openGoodsDetail = (goods) => {
+  if (!goods?.id) return
+  router.push({
+    name: 'GoodsDetail',
+    params: { id: goods.id },
+    query: {
+      name: goods.name || '',
+      price: goods.price ?? '',
+      img: goods.imageUrl || '',
+      desc: goods.description || '',
+      stock: goods.stock ?? ''
+    }
+  })
+}
 </script>
 
 <style scoped>
-/* 1. 容器与背景 (Global) */
 .mobile-shop-container {
-  height: 100vh; /* 视口高度 */
+  min-height: 100%;
+  padding: 10px 12px 14px;
+  background: var(--color-bg);
   display: flex;
   flex-direction: column;
-  background-color: #f5f6fa; /* 防止大白屏 */
+  gap: 10px;
 }
 
-.shop-body {
-  flex: 1; /* 占满剩余空间 */
-  display: flex;
-  overflow: hidden; /* 关键：防止整体滚动 */
-  position: relative;
-}
-
-/* 2. 顶部品牌栏 (.shop-header) */
 .shop-header {
-  background: linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%);
-  height: 130px;
-  border-bottom-left-radius: 24px;
-  border-bottom-right-radius: 24px;
-  padding: 20px 16px;
+  background: #fff;
+  border: var(--border-strong);
+  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-card);
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  flex-shrink: 0;
-  z-index: 10;
-  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.15);
+  gap: 10px;
 }
 
 .header-content {
-  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brand-kicker {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.55);
+  font-weight: 700;
 }
 
 .brand-title {
-  font-size: 26px;
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.15;
+  color: var(--color-text);
   font-weight: 900;
-  color: #fff;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  margin-bottom: 4px;
 }
 
-.brand-subtitle {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 500;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-/* 搜索框优化 */
 .search-bar-box :deep(.el-input__wrapper) {
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  border: none;
+  border-radius: var(--radius-pill);
+  border: var(--border-strong);
+  box-shadow: none;
+  background: #fff;
 }
 
 .search-bar-box :deep(.el-input__inner) {
-  color: #333;
+  font-size: 14px;
 }
 
-/* 3. 左侧导航 (.category-sidebar) */
-.home-sidebar {
-  width: 30%;
-  min-width: 140px;
-  background-color: #f7f8fa;
-  overflow-y: auto;
-  padding-bottom: 20px;
+.category-strip {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  background: var(--color-bg);
+  padding: 2px 0 4px;
 }
 
-/* 隐藏滚动条 */
-.home-sidebar::-webkit-scrollbar,
-.home-content::-webkit-scrollbar {
+.category-track {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.category-track::-webkit-scrollbar {
   display: none;
 }
 
-.sidebar-item {
-  padding: 12px 14px;
-  text-align: left;
-  font-size: 14px;
-  color: #666;
-  position: relative;
-  transition: all 0.2s;
-  cursor: pointer;
-  border-radius: 99px;
-  margin: 8px 12px;
-  background: rgba(255,255,255,0.6);
+.subcategory-strip {
+  margin-top: -2px;
+}
+
+.subcategory-track {
   display: flex;
-  align-items: center;
-  min-height: 46px;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
 }
 
-.sidebar-item.active {
-  background-color: #ffffff;
-  color: #ff6b6b;
-  font-weight: 800;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+.subcategory-track::-webkit-scrollbar {
+  display: none;
 }
 
-.sidebar-item.active::before {
-  content: '';
-  position: absolute;
-  left: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  height: 10px;
-  width: 10px;
-  background-color: #ff6b6b;
-  border-radius: 50%;
-}
-.item-text {
-  width: 100%;
-  margin-left: 18px;
+.subcategory-chip {
+  flex: 0 0 auto;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  border: var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: #fff;
+  color: rgba(0, 0, 0, 0.64);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 6px 12px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.82);
 }
 
-/* 4. 右侧商品区 (.product-area) */
-.home-content {
-  width: 70%;
-  background-color: #ffffff;
-  overflow-y: auto;
-  padding: 12px;
+.subcategory-chip.active {
+  background: var(--color-accent);
+  color: #111;
 }
 
-/* 轮播图美化 */
-.banner-box {
-  margin-bottom: 16px;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+.subcategory-chip:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.8);
 }
 
-.banner-item {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 24px;
-  font-weight: bold;
+.category-pill {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  padding: 8px 14px;
+  border: var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: #fff;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.9);
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.72);
+  line-height: 1;
+  user-select: none;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease, color 0.12s ease;
 }
 
-.banner-emoji {
-  font-size: 48px;
-  margin-left: 10px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+.category-pill.active {
+  background: var(--color-primary);
+  color: #111;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.95);
 }
 
-/* 分类横向滚动双排 */
-/* 分类横向滚动双排回退 */
+.category-pill:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.9);
+}
 
-/* 商品列表 */
-.goods-list {
+.spotlight-zone {
+  background: #fff;
+  border: var(--border-strong);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-float);
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding-bottom: 20px;
-  background: #fff;
-  border-radius: 16px;
+  gap: 10px;
 }
-.goods-card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 12px;
+
+.spotlight-head {
   display: flex;
-  gap: 12px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-  transition: transform 0.1s;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.spotlight-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--color-text);
+}
+
+.spotlight-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.spotlight-tab {
+  border: var(--border-strong);
+  background: #fff;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.65);
+  padding: 4px 10px;
+  line-height: 1;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.85);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+
+.spotlight-tab.active {
+  background: var(--color-primary);
+  color: #111;
+}
+
+.spotlight-tab:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.spotlight-track {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.spotlight-track::-webkit-scrollbar {
+  display: none;
+}
+
+.spotlight-card {
+  flex: 0 0 76%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fffbe6;
+  border: var(--border-strong);
+  border-radius: calc(var(--radius-card) - 2px);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.9);
+  padding: 8px;
   position: relative;
+  cursor: pointer;
 }
 
-.goods-card:active {
-  transform: scale(0.98);
+.spotlight-card:active {
+  transform: translateY(1px) scale(0.99);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.85);
 }
 
-.img-box {
-  width: 100px;
-  height: 100px;
+.spotlight-thumb {
+  width: 62px;
+  height: 62px;
   flex-shrink: 0;
   border-radius: 12px;
   overflow: hidden;
-  background: #f9f9f9;
+  border: var(--border-strong);
+  background: #fff;
+}
+
+.spotlight-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.spotlight-info {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.spotlight-name {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 800;
+  color: var(--color-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.spotlight-price {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 900;
+  color: var(--color-accent);
+}
+
+.spotlight-add {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-pill);
+  border: var(--border-strong);
+  background: var(--color-primary);
+  color: #111;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.spotlight-add:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.home-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.empty-state {
+  padding: 30px 12px;
+  border: var(--border-strong);
+  border-radius: var(--radius-card);
+  background: #fff;
+}
+
+.goods-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 8px;
+}
+
+.goods-card {
+  background: #fff;
+  border-radius: var(--radius-card);
+  border: var(--border-strong);
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.86);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
   position: relative;
+  min-height: 96px;
+  cursor: pointer;
+}
+
+.goods-card:active {
+  transform: translateY(1px) scale(0.99);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.82);
+}
+
+.img-box {
+  width: 82px;
+  height: 82px;
+  flex-shrink: 0;
+  border-radius: calc(var(--radius-card) - 4px);
+  border: var(--border-strong);
+  overflow: hidden;
+  background: #fff;
 }
 
 .img-box img {
@@ -354,22 +684,21 @@ const addToCart = async (goods) => {
   object-fit: cover;
 }
 
-/* 收藏按钮回退 */
-
 .info-box {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 4px 0;
+  gap: 8px;
 }
 
 .goods-name {
-  font-size: 15px;
-  font-weight: bold;
-  color: #333;
   margin: 0;
-  line-height: 1.4;
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: 800;
+  color: var(--color-text);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -378,56 +707,78 @@ const addToCart = async (goods) => {
 
 .goods-meta {
   font-size: 11px;
-  color: #999;
+  color: rgba(0, 0, 0, 0.55);
 }
 
 .goods-bottom {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  padding-right: 56px;
+  padding-right: 44px;
 }
 
 .price {
-  color: #ff6b6b;
-  font-size: 12px;
-  font-weight: bold;
+  color: var(--color-accent);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .price-num {
-  font-size: 20px;
+  font-size: 22px;
+  font-weight: 900;
   margin-left: 2px;
 }
 
 .add-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%);
-  color: white;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  border: var(--border-strong);
+  color: #111;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 12px rgba(255, 107, 107, 0.35);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.9);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
   cursor: pointer;
   position: absolute;
-  right: 12px;
-  bottom: 12px;
+  right: 10px;
+  bottom: 10px;
+}
+
+.add-btn :deep(.el-icon) {
+  font-size: 18px;
+  font-weight: 900;
 }
 
 .add-btn:active {
-  transform: scale(0.9);
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.9);
+  filter: brightness(0.96);
 }
 
-.empty-state {
-  padding: 40px;
-  text-align: center;
+.skeleton .skeleton-bg {
+  background: #efefef;
 }
 
-/* Skeleton */
-.skeleton .skeleton-bg { background: #eee; }
-.skeleton .skeleton-line { height: 12px; background: #eee; border-radius: 6px; margin: 8px 0; }
-.skeleton .skeleton-line.short { width: 60%; }
-.skeleton .skeleton-line.long { width: 90%; }
-.skeleton .skeleton-line.price { width: 40%; }
+.skeleton .skeleton-line {
+  height: 11px;
+  background: #efefef;
+  border-radius: var(--radius-pill);
+  margin: 6px 0;
+}
+
+.skeleton .skeleton-line.short {
+  width: 62%;
+}
+
+.skeleton .skeleton-line.long {
+  width: 90%;
+}
+
+.skeleton .skeleton-line.price {
+  width: 42%;
+}
 </style>

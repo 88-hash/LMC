@@ -5,6 +5,7 @@ import com.leyi.snack.mapper.GoodsMapper;
 import com.leyi.snack.service.GoodsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -19,20 +20,45 @@ public class GoodsServiceImpl implements GoodsService {
     }
 
     @Override
+    public List<Goods> findByCategoryFilters(Long category1Id, Long category2Id) {
+        return goodsMapper.findByCategoryFilters(category1Id, category2Id);
+    }
+
+    @Override
+    public Goods findById(Long id) {
+        return goodsMapper.selectById(id);
+    }
+
+    @Override
     public void add(Goods goods) {
-        // è®¾ç½®é»˜è®¤å€¼
-        if (goods.getCategoryId() == null) goods.setCategoryId(0L); // é»˜è®¤åˆ†ç±»
-        if (goods.getIsOnSale() == null) goods.setIsOnSale(1); // é»˜è®¤ä¸Šæž¶
+        normalizeCategory(goods);
+        if (goods.getIsOnSale() == null) {
+            goods.setIsOnSale(1);
+        }
         goodsMapper.save(goods);
     }
 
     @Override
     public void update(Goods goods) {
+        normalizeCategory(goods);
         goodsMapper.update(goods);
     }
 
     @Override
     public void delete(Long id) {
         goodsMapper.deleteById(id);
+    }
+
+    private void normalizeCategory(Goods goods) {
+        if (goods == null) {
+            throw new RuntimeException("ÉÌÆ·²ÎÊý²»ÄÜÎª¿Õ");
+        }
+        if (goods.getCategory2Id() == null && goods.getCategoryId() != null) {
+            goods.setCategory2Id(goods.getCategoryId());
+        }
+        if (goods.getCategory2Id() == null || goods.getCategory2Id() <= 0) {
+            throw new RuntimeException("ÇëÑ¡Ôñ¶þ¼¶·ÖÀà");
+        }
+        goods.setCategoryId(goods.getCategory2Id());
     }
 }

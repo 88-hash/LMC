@@ -3,6 +3,9 @@ import request from '../utils/request'
 
 export const useCartStore = defineStore('cart', {
   state: () => ({ count: 0 }),
+  getters: {
+    totalCount: (state) => state.count
+  },
   actions: {
     async refresh() {
       const res = await request.get('/cart/list')
@@ -13,4 +16,3 @@ export const useCartStore = defineStore('cart', {
     setCount(n) { this.count = n }
   }
 })
-

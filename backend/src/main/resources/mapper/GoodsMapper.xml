@@ -1,30 +1,73 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.leyi.snack.mapper.GoodsMapper">
 
+    <sql id="goods_columns">
+        g.id,
+        g.category2_id,
+        g.category2_id AS category_id,
+        c2.parent_id AS category1_id,
+        g.name,
+        g.price,
+        g.stock,
+        g.bar_code,
+        g.image_url,
+        g.description,
+        g.is_on_sale,
+        g.expire_date,
+        g.is_deleted,
+        g.created_at,
+        g.updated_at
+    </sql>
+
     <select id="findAll" resultType="com.leyi.snack.entity.Goods">
-        SELECT * FROM goods WHERE is_deleted = 0 ORDER BY created_at DESC
+        SELECT
+        <include refid="goods_columns"/>
+        FROM goods g
+        LEFT JOIN category2 c2 ON g.category2_id = c2.id
+        WHERE g.is_deleted = 0
+        ORDER BY g.created_at DESC
+    </select>
+
+    <select id="findByCategoryFilters" resultType="com.leyi.snack.entity.Goods">
+        SELECT
+        <include refid="goods_columns"/>
+        FROM goods g
+        LEFT JOIN category2 c2 ON g.category2_id = c2.id
+        WHERE g.is_deleted = 0
+        <if test="category2Id != null and category2Id &gt; 0">
+            AND g.category2_id = #{category2Id}
+        </if>
+        <if test="category1Id != null and category1Id &gt; 0">
+            AND c2.parent_id = #{category1Id}
+        </if>
+        ORDER BY g.created_at DESC
     </select>
 
     <select id="selectById" resultType="com.leyi.snack.entity.Goods">
-        SELECT * FROM goods WHERE id = #{id}
+        SELECT
+        <include refid="goods_columns"/>
+        FROM goods g
+        LEFT JOIN category2 c2 ON g.category2_id = c2.id
+        WHERE g.id = #{id}
     </select>
 
     <insert id="save" parameterType="com.leyi.snack.entity.Goods" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO goods (
-            category_id, name, price, stock, bar_code, image_url, 
+            category2_id, category_id, name, price, stock, bar_code, image_url,
             description, is_on_sale, expire_date
         ) VALUES (
-            #{categoryId}, #{name}, #{price}, #{stock}, #{barCode}, #{imageUrl}, 
+            #{category2Id}, #{category2Id}, #{name}, #{price}, #{stock}, #{barCode}, #{imageUrl},
             #{description}, #{isOnSale}, #{expireDate}
         )
     </insert>
 
     <update id="update" parameterType="com.leyi.snack.entity.Goods">
         UPDATE goods
-        SET category_id = #{categoryId},
+        SET category2_id = #{category2Id},
+            category_id = #{category2Id},
             name = #{name},
             price = #{price},
             stock = #{stock},
@@ -36,7 +79,6 @@
         WHERE id = #{id}
     </update>
 
-    <!-- 逻辑删除 -->
     <update id="deleteById">
         UPDATE goods SET is_deleted = 1 WHERE id = #{id}
     </update>
@@ -49,21 +91,20 @@
         UPDATE goods SET stock = stock - #{delta} WHERE id = #{id}
     </update>
 
-    <!-- 临期商品 (未来30天过期) -->
     <select id="selectExpiringGoods" resultType="com.leyi.snack.vo.DashboardFullVO$RiskGoods">
         SELECT id, name, stock, '即将过期' as type
-        FROM goods 
-        WHERE is_deleted = 0 
-          AND expire_date IS NOT NULL 
+        FROM goods
+        WHERE is_deleted = 0
+          AND expire_date IS NOT NULL
           AND expire_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL #{days} DAY)
     </select>
 
-    <!-- 低库存商品详情 -->
     <select id="selectLowStockGoodsList" resultType="com.leyi.snack.vo.DashboardFullVO$RiskGoods">
         SELECT id, name, stock, '库存不足' as type
-        FROM goods 
-        WHERE is_deleted = 0 
+        FROM goods
+        WHERE is_deleted = 0
           AND stock &lt; #{threshold}
     </select>
 
 </mapper>
+

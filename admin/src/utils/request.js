@@ -14,18 +14,14 @@ const request = axios.create({
 // 请求拦截器
 request.interceptors.request.use(config => {
   NProgress.start()
-  
-  // 智能鉴权：根据请求路径或页面路径判断使用哪个 Token
-  // 如果当前是后台页面请求，优先使用 adminToken
-  // 简单策略：尝试获取 adminToken，如果存在且请求的是后台接口，则使用
-  // 但更稳妥的是：
-  // 1. 如果请求 URL 包含 /admin，优先取 adminToken
-  // 2. 否则取 token
-  
+
+  // Admin 站点下的所有接口都应优先携带 adminToken。
   let token = null
-  if (config.url.includes('/admin')) {
+  const isAdminPage = window.location.pathname.startsWith('/admin')
+  if (isAdminPage) {
     token = localStorage.getItem('adminToken')
-  } else {
+  }
+  if (!token) {
     token = localStorage.getItem('token')
   }
   
@@ -45,8 +41,9 @@ request.interceptors.response.use(res => {
   if (data.code === 1) {
     return data
   } else {
-    ElMessage.error(data.msg || '网络异常')
-    return Promise.reject(data.msg)
+    const msg = data.message || data.msg || '网络异常'
+    ElMessage.error(msg)
+    return Promise.reject(msg)
   }
 }, error => {
   NProgress.done()

@@ -33,13 +33,14 @@
     <!-- 品类销售占比 -->
     <select id="selectCategorySalesShare" resultType="com.leyi.snack.vo.DashboardFullVO$CategoryShare">
         SELECT 
-            c.name as name, 
+            c1.name as name,
             SUM(oi.price * oi.quantity) as value
         FROM order_item oi
         JOIN goods g ON oi.goods_id = g.id
-        JOIN category c ON g.category_id = c.id
+        JOIN category2 c2 ON g.category2_id = c2.id
+        JOIN category1 c1 ON c2.parent_id = c1.id
         JOIN `order` o ON oi.order_id = o.id
         WHERE o.status = 1
-        GROUP BY c.name
+        GROUP BY c1.name
     </select>
 </mapper>

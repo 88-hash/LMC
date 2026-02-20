@@ -41,11 +41,15 @@ const cartCount = computed(() => cartStore.totalCount)
   left: 0;
   right: 0;
   height: 50px;
-  background: #fff;
+  background: var(--color-bg);
   display: flex;
   justify-content: space-around;
   align-items: center;
-  border-top: 1px solid #f0f0f0;
+  border: var(--border-strong);
+  border-bottom: none;
+  border-top-left-radius: var(--radius-card);
+  border-top-right-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
   padding-bottom: env(safe-area-inset-bottom);
   z-index: 100;
 }
@@ -56,10 +60,11 @@ const cartCount = computed(() => cartStore.totalCount)
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #999;
+  color: rgba(0, 0, 0, 0.55);
   text-decoration: none;
   font-size: 10px;
   gap: 2px;
+  transition: transform 0.12s ease, color 0.12s ease, filter 0.12s ease;
 }
 
 .tab-item .el-icon {
@@ -69,6 +74,16 @@ const cartCount = computed(() => cartStore.totalCount)
 
 .tab-item.active {
   color: var(--color-primary);
+  filter: saturate(1.05);
+}
+
+.tab-item:active {
+  transform: translateY(1px) scale(0.98);
+  filter: brightness(0.96);
+}
+
+.tab-bar:has(.tab-item:active) {
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.9);
 }
 
 .icon-wrapper {
@@ -89,8 +104,8 @@ const cartCount = computed(() => cartStore.totalCount)
   min-width: 14px;
   line-height: 14px;
   text-align: center;
-  border-radius: 7px;
+  border-radius: var(--radius-pill);
   padding: 0 4px;
-  border: 1px solid #fff;
+  border: var(--border-strong);
 }
 </style>

@@ -8,6 +8,7 @@ import java.util.List;
 @Mapper
 public interface GoodsMapper {
     List<Goods> findAll();
+    List<Goods> findByCategoryFilters(@Param("category1Id") Long category1Id, @Param("category2Id") Long category2Id);
     int save(Goods goods);
     int update(Goods goods);
     int deleteById(@Param("id") Long id);

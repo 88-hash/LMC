@@ -5,23 +5,95 @@
 <mapper namespace="com.leyi.snack.mapper.CategoryMapper">
 
     <select id="findAll" resultType="com.leyi.snack.entity.Category">
-        SELECT * FROM category ORDER BY sort ASC, created_at DESC
+        SELECT id, 0 AS parent_id, name, sort, created_at, updated_at
+        FROM category1
+        UNION ALL
+        SELECT id, parent_id, name, sort, created_at, updated_at
+        FROM category2
+        ORDER BY parent_id ASC, sort ASC, created_at DESC
     </select>
 
-    <insert id="save" parameterType="com.leyi.snack.entity.Category" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO category (parent_id, name, sort)
+    <select id="findLevel1" resultType="com.leyi.snack.entity.Category">
+        SELECT id, 0 AS parent_id, name, sort, created_at, updated_at
+        FROM category1
+        ORDER BY sort ASC, created_at DESC
+    </select>
+
+    <select id="findLevel2ByParentId" resultType="com.leyi.snack.entity.Category">
+        SELECT id, parent_id, name, sort, created_at, updated_at
+        FROM category2
+        WHERE parent_id = #{parentId}
+        ORDER BY sort ASC, created_at DESC
+    </select>
+
+    <select id="findLevel1ById" resultType="com.leyi.snack.entity.Category">
+        SELECT id, 0 AS parent_id, name, sort, created_at, updated_at
+        FROM category1
+        WHERE id = #{id}
+    </select>
+
+    <select id="findLevel2ById" resultType="com.leyi.snack.entity.Category">
+        SELECT id, parent_id, name, sort, created_at, updated_at
+        FROM category2
+        WHERE id = #{id}
+    </select>
+
+    <select id="findLevel1ByName" resultType="com.leyi.snack.entity.Category">
+        SELECT id, 0 AS parent_id, name, sort, created_at, updated_at
+        FROM category1
+        WHERE name = #{name}
+        LIMIT 1
+    </select>
+
+    <select id="findLevel2ByNameAndParentId" resultType="com.leyi.snack.entity.Category">
+        SELECT id, parent_id, name, sort, created_at, updated_at
+        FROM category2
+        WHERE name = #{name} AND parent_id = #{parentId}
+        LIMIT 1
+    </select>
+
+    <insert id="saveLevel1" parameterType="com.leyi.snack.entity.Category" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO category1 (name, sort)
+        VALUES (#{name}, #{sort})
+    </insert>
+
+    <insert id="saveLevel2" parameterType="com.leyi.snack.entity.Category" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO category2 (parent_id, name, sort)
         VALUES (#{parentId}, #{name}, #{sort})
     </insert>
 
-    <update id="update" parameterType="com.leyi.snack.entity.Category">
-        UPDATE category
+    <update id="updateLevel1" parameterType="com.leyi.snack.entity.Category">
+        UPDATE category1
         SET name = #{name},
             sort = #{sort}
         WHERE id = #{id}
     </update>
 
-    <delete id="deleteById">
-        DELETE FROM category WHERE id = #{id}
+    <update id="updateLevel2" parameterType="com.leyi.snack.entity.Category">
+        UPDATE category2
+        SET parent_id = #{parentId},
+            name = #{name},
+            sort = #{sort}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteLevel1ById">
+        DELETE FROM category1 WHERE id = #{id}
     </delete>
+
+    <delete id="deleteLevel2ById">
+        DELETE FROM category2 WHERE id = #{id}
+    </delete>
+
+    <select id="countLevel2ByParentId" resultType="int">
+        SELECT COUNT(*) FROM category2 WHERE parent_id = #{parentId}
+    </select>
+
+    <select id="countGoodsByCategory2Id" resultType="int">
+        SELECT COUNT(*)
+        FROM goods
+        WHERE is_deleted = 0
+          AND category2_id = #{category2Id}
+    </select>
 
 </mapper>

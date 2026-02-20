@@ -1,89 +1,108 @@
-<template>
-  <div class="category-container animate__animated animate__fadeIn">
-    <!-- 头部操作区 -->
+﻿<template>
+  <div class="category-page">
     <div class="page-header">
-      <h2 class="page-title">分类管理</h2>
-      <el-button type="primary" :icon="Plus" @click="handleAdd">新增分类</el-button>
+      <h2 class="page-title">分类管理（一级 / 二级）</h2>
+      <el-button type="primary" :icon="Plus" @click="openLevel1Dialog">新增一级分类</el-button>
     </div>
 
-    <!-- 表格区域 -->
-    <el-card shadow="never" class="table-card">
-      <el-table 
-        v-loading="loading"
-        :data="tableData" 
-        style="width: 100%"
-        :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
-      >
-        <el-table-column prop="id" label="ID" width="80" align="center" />
-        
-        <el-table-column prop="name" label="分类名称" min-width="150">
-          <template #default="{ row }">
-            <el-tag type="success" effect="plain">{{ row.name }}</el-tag>
+    <el-row :gutter="16">
+      <el-col :span="11">
+        <el-card shadow="never" class="panel-card">
+          <template #header>
+            <div class="panel-head">
+              <span>一级分类</span>
+              <el-tag type="info">{{ level1List.length }}</el-tag>
+            </div>
           </template>
-        </el-table-column>
-        
-        <el-table-column prop="sort" label="排序值" width="120" align="center">
-          <template #default="{ row }">
-            <el-tag type="info">{{ row.sort }}</el-tag>
-          </template>
-        </el-table-column>
-        
-        <el-table-column prop="createdAt" label="创建时间" min-width="180" align="center">
-          <template #default="{ row }">
-            {{ formatTime(row.createdAt) }}
-          </template>
-        </el-table-column>
-        
-        <el-table-column label="操作" width="180" align="center" fixed="right">
-          <template #default="{ row }">
-            <el-button link type="primary" :icon="Edit" @click="handleEdit(row)">编辑</el-button>
-            <el-button link type="danger" :icon="Delete" @click="handleDelete(row)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-card>
 
-    <!-- 新增/编辑弹窗 -->
-    <el-dialog
-      v-model="dialogVisible"
-      :title="dialogTitle"
-      width="500px"
-      destroy-on-close
-    >
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
+          <el-table
+            v-loading="level1Loading"
+            :data="level1List"
+            row-key="id"
+            highlight-current-row
+            @current-change="handleLevel1CurrentChange"
+            style="width: 100%"
+          >
+            <el-table-column prop="name" label="名称" min-width="140" />
+            <el-table-column prop="sort" label="排序" width="80" align="center" />
+            <el-table-column label="操作" width="140" align="center">
+              <template #default="{ row }">
+                <el-button link type="primary" :icon="Edit" @click="openLevel1EditDialog(row)">编辑</el-button>
+                <el-button link type="danger" :icon="Delete" @click="handleDelete(row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
+      </el-col>
+
+      <el-col :span="13">
+        <el-card shadow="never" class="panel-card">
+          <template #header>
+            <div class="panel-head">
+              <span>二级分类</span>
+              <div class="head-actions">
+                <span class="parent-name">{{ currentLevel1Name }}</span>
+                <el-button type="primary" link :disabled="!currentLevel1Id" @click="openLevel2Dialog">新增二级分类</el-button>
+              </div>
+            </div>
+          </template>
+
+          <el-table v-loading="level2Loading" :data="level2List" row-key="id" style="width: 100%">
+            <el-table-column prop="name" label="名称" min-width="160" />
+            <el-table-column prop="sort" label="排序" width="80" align="center" />
+            <el-table-column label="操作" width="140" align="center">
+              <template #default="{ row }">
+                <el-button link type="primary" :icon="Edit" @click="openLevel2EditDialog(row)">编辑</el-button>
+                <el-button link type="danger" :icon="Delete" @click="handleDelete(row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+
+          <el-empty v-if="!level2Loading && !level2List.length" description="当前一级分类下暂无二级分类" />
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="460px" destroy-on-close>
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
+        <el-form-item v-if="dialogLevel === 2" label="所属一级">
+          <el-input :model-value="currentLevel1Name" disabled />
+        </el-form-item>
         <el-form-item label="分类名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入分类名称（如：膨化食品）" />
+          <el-input v-model="form.name" placeholder="请输入分类名称" maxlength="20" show-word-limit />
         </el-form-item>
         <el-form-item label="排序" prop="sort">
-          <el-input-number v-model="form.sort" :min="0" :max="999" />
-          <div class="form-tip">数字越小越靠前</div>
+          <el-input-number v-model="form.sort" :min="0" :max="9999" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleSubmit" :loading="submitLoading">确定</el-button>
-        </span>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { Plus, Edit, Delete } from '@element-plus/icons-vue'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { Delete, Edit, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '@/utils/request'
 
-const loading = ref(false)
-const tableData = ref([])
-const dialogVisible = ref(false)
-const dialogTitle = ref('新增分类')
+const level1Loading = ref(false)
+const level2Loading = ref(false)
 const submitLoading = ref(false)
-const formRef = ref(null)
+const level1List = ref([])
+const level2List = ref([])
+const currentLevel1Id = ref(null)
 
+const dialogVisible = ref(false)
+const dialogLevel = ref(1)
+const dialogMode = ref('add')
+const formRef = ref(null)
 const form = reactive({
   id: null,
+  parentId: 0,
   name: '',
   sort: 0
 })
@@ -92,117 +111,197 @@ const rules = {
   name: [{ required: true, message: '请输入分类名称', trigger: 'blur' }]
 }
 
-onMounted(() => {
-  fetchData()
+const currentLevel1Name = computed(() => {
+  const target = level1List.value.find(item => item.id === currentLevel1Id.value)
+  return target ? target.name : '请先选择一级分类'
 })
 
-const fetchData = async () => {
-  loading.value = true
+const dialogTitle = computed(() => {
+  const levelText = dialogLevel.value === 1 ? '一级分类' : '二级分类'
+  const modeText = dialogMode.value === 'add' ? '新增' : '编辑'
+  return `${modeText}${levelText}`
+})
+
+onMounted(async () => {
+  await loadLevel1()
+})
+
+async function loadLevel1() {
+  level1Loading.value = true
   try {
-    const res = await request.get('/category/list')
+    const res = await request.get('/category1')
     if (res.code === 1) {
-      tableData.value = res.data
+      level1List.value = res.data || []
+      if (level1List.value.length > 0) {
+        const existing = level1List.value.find(item => item.id === currentLevel1Id.value)
+        currentLevel1Id.value = existing ? existing.id : level1List.value[0].id
+        await loadLevel2(currentLevel1Id.value)
+      } else {
+        currentLevel1Id.value = null
+        level2List.value = []
+      }
     }
-  } catch (e) {
-    console.error(e)
   } finally {
-    loading.value = false
+    level1Loading.value = false
   }
 }
 
-const handleAdd = () => {
-  dialogTitle.value = '新增分类'
+async function loadLevel2(parentId) {
+  if (!parentId) {
+    level2List.value = []
+    return
+  }
+  level2Loading.value = true
+  try {
+    const res = await request.get('/category2', { params: { parentId } })
+    if (res.code === 1) {
+      level2List.value = res.data || []
+    }
+  } finally {
+    level2Loading.value = false
+  }
+}
+
+function handleLevel1CurrentChange(row) {
+  if (!row?.id) return
+  currentLevel1Id.value = row.id
+  loadLevel2(row.id)
+}
+
+function resetForm() {
   form.id = null
+  form.parentId = dialogLevel.value === 1 ? 0 : Number(currentLevel1Id.value)
   form.name = ''
   form.sort = 0
+}
+
+function openLevel1Dialog() {
+  dialogMode.value = 'add'
+  dialogLevel.value = 1
+  resetForm()
   dialogVisible.value = true
 }
 
-const handleEdit = (row) => {
-  dialogTitle.value = '编辑分类'
+function openLevel2Dialog() {
+  if (!currentLevel1Id.value) {
+    ElMessage.warning('请先选择一级分类')
+    return
+  }
+  dialogMode.value = 'add'
+  dialogLevel.value = 2
+  resetForm()
+  dialogVisible.value = true
+}
+
+function openLevel1EditDialog(row) {
+  dialogMode.value = 'edit'
+  dialogLevel.value = 1
   form.id = row.id
+  form.parentId = 0
   form.name = row.name
-  form.sort = row.sort
+  form.sort = row.sort ?? 0
   dialogVisible.value = true
 }
 
-const handleDelete = (row) => {
-  ElMessageBox.confirm(`确定要删除分类 "${row.name}" 吗？`, '警告', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+function openLevel2EditDialog(row) {
+  dialogMode.value = 'edit'
+  dialogLevel.value = 2
+  form.id = row.id
+  form.parentId = row.parentId || Number(currentLevel1Id.value)
+  form.name = row.name
+  form.sort = row.sort ?? 0
+  dialogVisible.value = true
+}
+
+async function handleSubmit() {
+  if (!formRef.value) return
+  const valid = await formRef.value.validate().catch(() => false)
+  if (!valid) return
+
+  if (dialogLevel.value === 2 && !form.parentId) {
+    ElMessage.warning('二级分类必须绑定一级分类')
+    return
+  }
+
+  submitLoading.value = true
+  try {
+    const url = dialogMode.value === 'add' ? '/category/add' : '/category/update'
+    const payload = {
+      id: form.id,
+      parentId: dialogLevel.value === 1 ? 0 : Number(form.parentId),
+      name: form.name,
+      sort: Number(form.sort) || 0
+    }
+    const res = await request.post(url, payload)
+    if (res.code === 1) {
+      ElMessage.success(dialogMode.value === 'add' ? '新增成功' : '修改成功')
+      dialogVisible.value = false
+      await loadLevel1()
+      if (dialogLevel.value === 2) {
+        await loadLevel2(Number(payload.parentId))
+      }
+    }
+  } finally {
+    submitLoading.value = false
+  }
+}
+
+function handleDelete(row) {
+  ElMessageBox.confirm(`确认删除分类「${row.name}」吗？`, '提示', {
     type: 'warning'
   }).then(async () => {
-    try {
-      const res = await request.get(`/category/delete?id=${row.id}`)
-      if (res.code === 1) {
-        ElMessage.success('删除成功')
-        fetchData()
-      }
-    } catch (e) {
-      console.error(e)
-    }
-  })
-}
-
-const handleSubmit = async () => {
-  if (!formRef.value) return
-  
-  await formRef.value.validate(async (valid) => {
-    if (valid) {
-      submitLoading.value = true
-      try {
-        const url = form.id ? '/category/update' : '/category/add'
-        const res = await request.post(url, form)
-        
-        if (res.code === 1) {
-          ElMessage.success(form.id ? '修改成功' : '新增成功')
-          dialogVisible.value = false
-          fetchData()
-        }
-      } catch (e) {
-        console.error(e)
-      } finally {
-        submitLoading.value = false
+    const res = await request.get('/category/delete', { params: { id: row.id, parentId: row.parentId ?? 0 } })
+    if (res.code === 1) {
+      ElMessage.success('删除成功')
+      await loadLevel1()
+      if (currentLevel1Id.value) {
+        await loadLevel2(currentLevel1Id.value)
       }
     }
   })
-}
-
-const formatTime = (timeStr) => {
-  if (!timeStr) return '-'
-  return timeStr.replace('T', ' ').substring(0, 19)
 }
 </script>
 
 <style scoped>
-.category-container {
+.category-page {
   padding: 10px;
 }
 
 .page-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  justify-content: space-between;
+  margin-bottom: 14px;
 }
 
 .page-title {
+  margin: 0;
   font-size: 20px;
   font-weight: 600;
   color: #303133;
-  margin: 0;
-  border-left: 4px solid #409eff;
-  padding-left: 10px;
 }
 
-.table-card {
-  border-radius: 8px;
-  border: none;
+.panel-card {
+  min-height: 560px;
 }
 
-.form-tip {
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-weight: 600;
+}
+
+.head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.parent-name {
   font-size: 12px;
   color: #909399;
-  margin-left: 10px;
 }
 </style>
+

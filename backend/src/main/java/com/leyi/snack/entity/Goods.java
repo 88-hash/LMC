@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 public class Goods {
     private Long id;
     private Long categoryId;
+    private Long category1Id;
+    private Long category2Id;
     private String name;
     private BigDecimal price;
     private Integer stock;
