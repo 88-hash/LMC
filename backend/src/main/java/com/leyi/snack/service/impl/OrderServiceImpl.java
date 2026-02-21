@@ -187,4 +187,18 @@ public class OrderServiceImpl implements OrderService {
         // 统一：支付成功→状态为 0 (待核销)
         orderMapper.updateStatus(order.getId(), 0);
     }
+
+    @Override
+    public void cancel(String orderNo, Long userId) {
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if (order == null) throw new RuntimeException("Order not found");
+        if (!order.getUserId().equals(userId)) throw new RuntimeException("No permission");
+        if (order.getStatus() != null && order.getStatus() == 2) {
+            throw new RuntimeException("Order already canceled");
+        }
+        if (order.getStatus() != null && order.getStatus() == 1) {
+            throw new RuntimeException("Order already completed");
+        }
+        orderMapper.updateStatus(order.getId(), 2);
+    }
 }

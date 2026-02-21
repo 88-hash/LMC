@@ -4,7 +4,7 @@
       <div class="emoji">🍪</div>
       <h1 class="title">哎呀，页面被贪吃鬼偷走了！</h1>
       <p class="desc">您访问的页面好像不存在，或者正在烤箱里烘焙中...</p>
-      <el-button type="primary" size="large" round @click="$router.push('/')">
+      <el-button type="primary" size="large" round @click="$router.push('/home')">
         返回首页
       </el-button>
     </div>

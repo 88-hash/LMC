@@ -51,14 +51,15 @@ public class GoodsServiceImpl implements GoodsService {
 
     private void normalizeCategory(Goods goods) {
         if (goods == null) {
-            throw new RuntimeException("商品参数不能为空");
+            throw new RuntimeException("Goods payload cannot be null");
         }
         if (goods.getCategory2Id() == null && goods.getCategoryId() != null) {
             goods.setCategory2Id(goods.getCategoryId());
         }
         if (goods.getCategory2Id() == null || goods.getCategory2Id() <= 0) {
-            throw new RuntimeException("请选择二级分类");
+            throw new RuntimeException("Please select a subcategory");
         }
         goods.setCategoryId(goods.getCategory2Id());
     }
 }
+

@@ -1,4 +1,8 @@
-﻿const clientRoutes = [
+const clientRoutes = [
+  {
+    path: '/',
+    redirect: '/login'
+  },
   {
     path: '/login',
     name: 'Login',
@@ -10,7 +14,7 @@
     component: () => import('../../views/client/Layout.vue'),
     children: [
       {
-        path: '',
+        path: 'home',
         name: 'Home',
         component: () => import('../../views/client/Home.vue'),
         meta: { title: '乐逸零食' }

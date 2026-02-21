@@ -128,7 +128,7 @@ const handleLogin = async () => {
           localStorage.setItem('token', res.data.token)
           localStorage.setItem('userInfo', JSON.stringify(res.data))
           
-          router.push('/')
+          router.push('/home')
         } else {
           ElMessage.error(res.message || '登录失败')
         }

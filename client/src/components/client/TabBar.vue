@@ -1,6 +1,6 @@
 <template>
   <div class="tab-bar">
-    <router-link to="/" class="tab-item" active-class="active">
+    <router-link to="/home" class="tab-item" active-class="active">
       <el-icon><House /></el-icon>
       <span>首页</span>
     </router-link>
@@ -40,7 +40,7 @@ const cartCount = computed(() => cartStore.totalCount)
   bottom: 0;
   left: 0;
   right: 0;
-  height: 50px;
+  height: calc(50px + env(safe-area-inset-bottom));
   background: var(--color-bg);
   display: flex;
   justify-content: space-around;
@@ -51,7 +51,7 @@ const cartCount = computed(() => cartStore.totalCount)
   border-top-right-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
   padding-bottom: env(safe-area-inset-bottom);
-  z-index: 100;
+  z-index: 200;
 }
 
 .tab-item {

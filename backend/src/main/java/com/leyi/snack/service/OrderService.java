@@ -38,4 +38,9 @@ public interface OrderService {
      * 支付订单
      */
     void pay(String orderNo, String payMethod, Long userId);
+
+    /**
+     * 取消订单
+     */
+    void cancel(String orderNo, Long userId);
 }

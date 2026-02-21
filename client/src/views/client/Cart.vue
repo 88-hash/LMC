@@ -267,7 +267,7 @@ function checkout() {
 }
 
 function goBrowse() {
-  router.push('/')
+  router.push('/home')
 }
 
 function syncCartCount() {

@@ -115,12 +115,12 @@ function goBack() {
   if (window.history.length > 1) {
     router.back()
   } else {
-    router.push('/')
+    router.push('/home')
   }
 }
 
 function continueBrowse() {
-  router.push('/')
+  router.push('/home')
 }
 
 async function addCurrentToCart() {

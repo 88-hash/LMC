@@ -1,8 +1,8 @@
 <template>
   <div class="app-layout">
     <NavBar />
-    
-    <main class="app-main">
+
+    <main class="app-main" :class="{ 'with-tabbar': showTabBar }">
       <router-view v-slot="{ Component }">
         <transition name="slide-fade" mode="out-in">
           <component :is="Component" :key="$route.path" />
@@ -24,13 +24,9 @@ import { useCartStore } from '../../stores/cart'
 const route = useRoute()
 const cartStore = useCartStore()
 
-// 仅在主要页面显示 TabBar，或者一直显示？
-// 通常二级页面（如订单详情）不显示 TabBar。
-// 这里简单逻辑：一直显示，或者根据 meta 配置。
-// 让我们根据路由名判断，只在 Tab 页显示 TabBar，避免遮挡底部操作按钮（如“立即支付”）
-const showTabBar = computed(() => {
-  return ['Home', 'Cart', 'Order', 'Profile'].includes(route.name)
-})
+const TABBAR_PATHS = new Set(['/home', '/cart', '/order', '/profile'])
+
+const showTabBar = computed(() => TABBAR_PATHS.has(route.path))
 
 onMounted(() => {
   cartStore.refresh()
@@ -44,13 +40,15 @@ onMounted(() => {
 }
 
 .app-main {
-  padding-top: 46px; /* NavBar Height */
-  padding-bottom: calc(50px + env(safe-area-inset-bottom)); /* TabBar Height */
+  padding-top: 46px;
+  padding-bottom: env(safe-area-inset-bottom);
   min-height: 100vh;
-  overflow-x: hidden;
 }
 
-/* Slide Fade Animation */
+.app-main.with-tabbar {
+  padding-bottom: calc(58px + env(safe-area-inset-bottom));
+}
+
 .slide-fade-enter-active {
   transition: all 0.3s ease-out;
 }

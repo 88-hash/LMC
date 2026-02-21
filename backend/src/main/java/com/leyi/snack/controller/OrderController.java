@@ -75,4 +75,12 @@ public class OrderController {
         orderService.pay(orderNo, payMethod, userId);
         return Result.success();
     }
+
+    @PostMapping("/cancel")
+    public Result cancel(@RequestBody Map<String, String> params) {
+        Long userId = (Long) request.getAttribute("userId");
+        String orderNo = params.get("orderNo");
+        orderService.cancel(orderNo, userId);
+        return Result.success();
+    }
 }
