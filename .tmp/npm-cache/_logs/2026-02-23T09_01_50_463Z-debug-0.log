@@ -1,0 +1,65 @@
+0 verbose cli D:\node.exe D:\node_modules\npm\bin\npm-cli.js
+1 info using npm@10.9.3
+2 info using node@v22.19.0
+3 silly config load:file:D:\node_modules\npm\npmrc
+4 silly config load:file:C:\Users\lmc\Desktop\LeYi_Snack_System\client\.npmrc
+5 silly config load:file:C:\Users\lmc\.npmrc
+6 silly config load:file:C:\Users\lmc\.npm-global\etc\npmrc
+7 verbose title npm rebuild esbuild
+8 verbose argv "rebuild" "esbuild"
+9 verbose logfile logs-max:10 dir:C:\Users\lmc\Desktop\LeYi_Snack_System\.tmp\npm-cache\_logs\2026-02-23T09_01_50_463Z-
+10 verbose logfile C:\Users\lmc\Desktop\LeYi_Snack_System\.tmp\npm-cache\_logs\2026-02-23T09_01_50_463Z-debug-0.log
+11 silly logfile start cleaning logs, removing 2 files
+12 silly packumentCache heap:2197815296 maxSize:549453824 maxEntrySize:274726912
+13 silly logfile done cleaning log files
+14 verbose shrinkwrap failed to load node_modules/.package-lock.json out of date, updated: node_modules
+15 info run esbuild@0.27.2 postinstall node_modules/esbuild node install.js
+16 info run esbuild@0.27.2 postinstall { code: 'EPERM', signal: undefined }
+17 verbose stack Error: spawn EPERM
+17 verbose stack     at ChildProcess.spawn (node:internal/child_process:420:11)
+17 verbose stack     at spawn (node:child_process:786:9)
+17 verbose stack     at promiseSpawn (D:\node_modules\npm\node_modules\@npmcli\promise-spawn\lib\index.js:39:16)
+17 verbose stack     at spawnWithShell (D:\node_modules\npm\node_modules\@npmcli\promise-spawn\lib\index.js:124:10)
+17 verbose stack     at promiseSpawn (D:\node_modules\npm\node_modules\@npmcli\promise-spawn\lib\index.js:12:12)
+17 verbose stack     at runScriptPkg (D:\node_modules\npm\node_modules\@npmcli\run-script\lib\run-script-pkg.js:79:13)
+17 verbose stack     at runScript (D:\node_modules\npm\node_modules\@npmcli\run-script\lib\run-script.js:9:12)
+17 verbose stack     at D:\node_modules\npm\node_modules\@npmcli\arborist\lib\arborist\rebuild.js:329:17
+17 verbose stack     at run (D:\node_modules\npm\node_modules\promise-call-limit\dist\commonjs\index.js:67:22)
+17 verbose stack     at D:\node_modules\npm\node_modules\promise-call-limit\dist\commonjs\index.js:84:9
+18 error code EPERM
+19 error syscall spawn
+20 error errno -4048
+21 error Error: spawn EPERM
+21 error     at ChildProcess.spawn (node:internal/child_process:420:11)
+21 error     at spawn (node:child_process:786:9)
+21 error     at promiseSpawn (D:\node_modules\npm\node_modules\@npmcli\promise-spawn\lib\index.js:39:16)
+21 error     at spawnWithShell (D:\node_modules\npm\node_modules\@npmcli\promise-spawn\lib\index.js:124:10)
+21 error     at promiseSpawn (D:\node_modules\npm\node_modules\@npmcli\promise-spawn\lib\index.js:12:12)
+21 error     at runScriptPkg (D:\node_modules\npm\node_modules\@npmcli\run-script\lib\run-script-pkg.js:79:13)
+21 error     at runScript (D:\node_modules\npm\node_modules\@npmcli\run-script\lib\run-script.js:9:12)
+21 error     at D:\node_modules\npm\node_modules\@npmcli\arborist\lib\arborist\rebuild.js:329:17
+21 error     at run (D:\node_modules\npm\node_modules\promise-call-limit\dist\commonjs\index.js:67:22)
+21 error     at D:\node_modules\npm\node_modules\promise-call-limit\dist\commonjs\index.js:84:9 {
+21 error   errno: -4048,
+21 error   code: 'EPERM',
+21 error   syscall: 'spawn'
+21 error }
+22 error
+22 error The operation was rejected by your operating system.
+22 error It's possible that the file was already in use (by a text editor or antivirus),
+22 error or that you lack permissions to access it.
+22 error
+22 error If you believe this might be a permissions issue, please double-check the
+22 error permissions of the file and its containing directories, or try running
+22 error the command again as root/Administrator.
+23 silly unfinished npm timer build 1771837311104
+24 silly unfinished npm timer build:deps 1771837311104
+25 silly unfinished npm timer build:run:postinstall 1771837311115
+26 silly unfinished npm timer build:run:postinstall:node_modules/esbuild 1771837311116
+27 verbose cwd C:\Users\lmc\Desktop\LeYi_Snack_System\client
+28 verbose os Windows_NT 10.0.26200
+29 verbose node v22.19.0
+30 verbose npm  v10.9.3
+31 verbose exit -4048
+32 verbose code -4048
+33 error A complete log of this run can be found in: C:\Users\lmc\Desktop\LeYi_Snack_System\.tmp\npm-cache\_logs\2026-02-23T09_01_50_463Z-debug-0.log

@@ -1,0 +1,19 @@
+0 verbose cli D:\node.exe D:\node_modules\npm\bin\npm-cli.js
+1 info using npm@10.9.3
+2 info using node@v22.19.0
+3 silly config load:file:D:\node_modules\npm\npmrc
+4 silly config load:file:C:\Users\lmc\Desktop\LeYi_Snack_System\admin\.npmrc
+5 silly config load:file:C:\Users\lmc\.npmrc
+6 silly config load:file:C:\Users\lmc\.npm-global\etc\npmrc
+7 verbose title npm run dev --host 127.0.0.1 --port 5174 --strictPort
+8 verbose argv "run" "dev" "--" "--host" "127.0.0.1" "--port" "5174" "--strictPort"
+9 verbose logfile logs-max:10 dir:C:\Users\lmc\Desktop\LeYi_Snack_System\.tmp\npm-cache\_logs\2026-02-23T09_03_35_561Z-
+10 verbose logfile C:\Users\lmc\Desktop\LeYi_Snack_System\.tmp\npm-cache\_logs\2026-02-23T09_03_35_561Z-debug-0.log
+11 silly logfile start cleaning logs, removing 1 files
+12 silly logfile done cleaning log files
+13 verbose cwd C:\Users\lmc\Desktop\LeYi_Snack_System\admin
+14 verbose os Windows_NT 10.0.26200
+15 verbose node v22.19.0
+16 verbose npm  v10.9.3
+17 verbose exit -1
+18 verbose code -1
